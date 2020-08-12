@@ -1,5 +1,5 @@
 from copy import deepcopy
-from figures import Array_of_figures as pieces
+from figures import array_of_figures as pieces
 
 
 def check_collision(field, piece, piece_pos):
