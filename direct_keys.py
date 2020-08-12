@@ -7,8 +7,8 @@ rotate_k = 0x11  # W
 mv_left = 0x1E   # A
 place_k = 0x1F   # S
 mv_right = 0x20  # D
+hold = 0x10      # Q
 
-Q = 0x10
 left_mouse = 0x100
 right_mouse = 0x101
 
@@ -69,5 +69,5 @@ def release_key(hex_code):
 
 def click_key(hex_code):
     press_key(hex_code)
-    time.sleep(0.1)
+    time.sleep(0.12)
     release_key(hex_code)

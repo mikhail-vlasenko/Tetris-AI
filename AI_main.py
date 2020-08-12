@@ -48,7 +48,6 @@ def get_score(field):
     :return:
     """
     field = field.tolist()
-    print(len(field))
     score = 100
 
     clear = clear_line(field)
@@ -56,8 +55,8 @@ def get_score(field):
     score += (3 * clear[1]) ** 2
 
     roofs = find_roofs(field)
-    score -= roofs[0] * 4
-    score -= roofs[1] ** 1.5
+    score -= roofs[0] * 5
+    score -= roofs[1] ** 1.2
     return score
 
 

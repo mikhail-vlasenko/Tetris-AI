@@ -30,7 +30,7 @@ def land(field, piece, pos_now):
 def all_landings(field, piece_index):
     results = []
     for rotation in range(len(pieces[piece_index])):
-        for x_pos in range(-2, 10):
+        for x_pos in range(-3, 10):
             res = land(field, pieces[piece_index][rotation], [0, x_pos])
             if res is not None:
                 results.append([res, rotation, x_pos])
