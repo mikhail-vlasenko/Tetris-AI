@@ -54,9 +54,9 @@ def type_of_figure(arr):
         return 1
     elif figure == [[0, 1, 0, 0], [1, 1, 1, 0]]:
         return 2
-    elif figure == [[0, 0, 1, 0], [1, 1, 1, 0]]:
-        return 3
     elif figure == [[1, 0, 0, 0], [1, 1, 1, 0]]:
+        return 3
+    elif figure == [[0, 0, 1, 0], [1, 1, 1, 0]]:
         return 4
     elif figure == [[1, 1, 0, 0], [0, 1, 1, 0]]:
         return 5

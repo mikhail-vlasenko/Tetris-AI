@@ -1,6 +1,7 @@
 from find_landings import all_landings
 import numpy as np
 from direct_keys import *
+from copy import deepcopy
 
 FIELD_SIZE = [20, 10]
 
@@ -29,15 +30,15 @@ def find_roofs(field):
     :param field:
     :return:
     """
-    tops = [0]*10
+    tops = [100]*10
     blank_cnt = 0
     for i in range(len(field)):
         for j in range(FIELD_SIZE[1]):
-            if field[i][j] and not tops[j]:
+            if field[i][j] and tops[j] == 100:
                 tops[j] = i
-            elif not field[i][j] and tops[j]:
+            elif not field[i][j] and tops[j] != 100:
                 blank_cnt += 1
-    return blank_cnt, min(tops)
+    return blank_cnt, 17 - min(tops)
 
 
 def get_score(field):
@@ -46,16 +47,17 @@ def get_score(field):
     :param field:
     :return:
     """
-    field = field.tolist()[3:]
+    field = field.tolist()
+    print(len(field))
     score = 100
 
     clear = clear_line(field)
     field = clear[0]
-    score += clear[1] ** 2
+    score += (3 * clear[1]) ** 2
 
     roofs = find_roofs(field)
-    score -= roofs[0] * 5
-    score -= 20 - roofs[1]
+    score -= roofs[0] * 4
+    score -= roofs[1] ** 1.5
     return score
 
 
@@ -64,14 +66,13 @@ def choose_action(field, piece_idx):
     finds the best action to take
     :param field:
     :param piece_idx:
-    :return: [rotation, x_pos]
+    :return: [rotation, x_pos], max_score
     """
-    results = all_landings(field, piece_idx)
-    scores = []
-    for r in results:
-        scores.append(get_score(r[0]))
-    scores = np.array(scores)
-    return results[np.argmax(scores)][1], results[np.argmax(scores)][2]
+    results = all_landings(field[3:], piece_idx)
+    for i in range(len(results)):
+        results[i].append(get_score(deepcopy(results[i][0])))
+    results.sort(key=lambda x: x[3], reverse=True)
+    return results[0][1], results[0][2], results[0][3]
 
 
 def place_piece(rotation, x_pos):

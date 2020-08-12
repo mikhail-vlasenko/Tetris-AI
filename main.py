@@ -17,7 +17,7 @@ def main():
         field = get_field()
         placement = choose_action(field, piece_idx)
         print(field)
-        print(f'chosen placement for figure {piece_idx}, {placement}')
+        print(f'chosen placement for figure {piece_idx}, ({placement[0]}, {placement[1]}) with score {placement[2]}')
         place_piece(placement[0], placement[1])
         time.sleep(0.4)
 
