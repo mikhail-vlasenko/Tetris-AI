@@ -53,7 +53,7 @@ def get_score(field):
     score += clear[1] ** 2
 
     roofs = find_roofs(field)
-    score -= roofs[0]
+    score -= roofs[0] * 5
     score -= 20 - roofs[1]
     return score
 
