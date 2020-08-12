@@ -1,5 +1,6 @@
-from put_piece_down import all_landings
+from find_landings import all_landings
 import numpy as np
+from direct_keys import *
 
 FIELD_SIZE = [20, 10]
 
@@ -69,6 +70,16 @@ def choose_action(field, piece_idx):
     for r in results:
         scores.append(get_score(r[0]))
     scores = np.array(scores)
-    print(scores)
-    print(results)
     return results[np.argmax(scores)][1], results[np.argmax(scores)][2]
+
+
+def place_piece(rotation, x_pos):
+    for i in range(rotation):
+        click_key(rotate_k)
+    move = x_pos - 3  # 3 is the starting position
+    for i in range(abs(move)):
+        if move > 0:
+            click_key(mv_right)
+        else:
+            click_key(mv_left)
+    click_key(place_k)

@@ -25,8 +25,6 @@ def land(field, piece, pos_now):
         for j in range(4):
             if i + pos_now[0] < len(field) and j + pos_now[1] < len(field[0]):
                 res[i + pos_now[0]][j + pos_now[1]] += piece[i][j]
-    for x in res:
-        print(x)
     return res
 
 
