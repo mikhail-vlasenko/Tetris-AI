@@ -50,7 +50,7 @@ def type_of_figure(arr):
               [arr[1][3], arr[1][4], arr[1][5], arr[1][6]]]
     if figure == [[1, 1, 1, 1], [0, 0, 0, 0]]:
         return 0
-    elif figure == [[1, 1, 0, 0], [1, 1, 0, 0]]:
+    elif figure == [[0, 1, 1, 0], [0, 1, 1, 0]]:
         return 1
     elif figure == [[0, 1, 0, 0], [1, 1, 1, 0]]:
         return 2

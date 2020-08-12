@@ -69,5 +69,5 @@ def release_key(hex_code):
 
 def click_key(hex_code):
     press_key(hex_code)
-    time.sleep(0.05)
+    time.sleep(0.1)
     release_key(hex_code)

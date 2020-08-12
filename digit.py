@@ -27,11 +27,10 @@ def get_field():
 
     sizeCell = field.shape[0] // 20
     arr = np.zeros((20, 10))
-    iters = sizeCell + 1
+    iters = sizeCell
     for i in range(0, iters):
         arr += field[i::sizeCell, i::sizeCell][:20, :10]
 
     kek = np.array(arr / iters + 0.5, int)
     pD((kek, field, field_old))
-    if dbug:
-        print(kek)
+    return kek

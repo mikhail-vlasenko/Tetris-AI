@@ -13,10 +13,10 @@ def clear_line(field):
     """
     full_cnt = 0
     i = 0
-    while i < FIELD_SIZE[0]:
+    while i < len(field):
         if all(field[i]) == 1:
             full_cnt += 1
-            del(field[i])
+            del field[i]
             field.insert(0, [0]*FIELD_SIZE[1])
         else:
             i += 1
@@ -31,7 +31,7 @@ def find_roofs(field):
     """
     tops = [0]*10
     blank_cnt = 0
-    for i in range(FIELD_SIZE[0]):
+    for i in range(len(field)):
         for j in range(FIELD_SIZE[1]):
             if field[i][j] and not tops[j]:
                 tops[j] = i
@@ -46,6 +46,7 @@ def get_score(field):
     :param field:
     :return:
     """
+    field = field.tolist()[3:]
     score = 100
 
     clear = clear_line(field)

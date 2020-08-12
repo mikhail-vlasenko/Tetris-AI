@@ -1,16 +1,15 @@
 from copy import deepcopy
+
 from figures import array_of_figures as pieces
 
 
 def check_collision(field, piece, piece_pos):
     for i in range(4):
         for j in range(4):
-            if i + piece_pos[0] < len(field) and j + piece_pos[1] < len(field[0]):
-                if field[i + piece_pos[0]][j + piece_pos[1]] and piece[i][j]:
+            if piece[i][j]:
+                if (i + piece_pos[0] >= len(field)) or (j + piece_pos[1] >= len(field[0])) or (i + piece_pos[0] < 0) or\
+                        (j + piece_pos[1] < 0) or field[i + piece_pos[0]][j + piece_pos[1]]:
                     return True
-            elif (0 > i + piece_pos[0] or i + piece_pos[0] >= len(field) or
-                  0 > j + piece_pos[1] or j + piece_pos[1] >= len(field[0])) and piece[i][j]:
-                return True
     return False
 
 
@@ -33,6 +32,6 @@ def all_landings(field, piece_index):
     for rotation in range(len(pieces[piece_index])):
         for x_pos in range(-2, 10):
             res = land(field, pieces[piece_index][rotation], [0, x_pos])
-            if res:
+            if res is not None:
                 results.append([res, rotation, x_pos])
     return results
