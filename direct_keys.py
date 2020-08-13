@@ -8,6 +8,7 @@ mv_left = 0x1E   # A
 place_k = 0x1F   # S
 mv_right = 0x20  # D
 hold = 0x10      # Q
+fall_faster = 0x12  # E
 
 left_mouse = 0x100
 right_mouse = 0x101

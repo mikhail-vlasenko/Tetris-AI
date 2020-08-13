@@ -14,9 +14,7 @@ def main():
         if piece_idx is None:
             piece_idx = type_of_figure(field[1:])
             if piece_idx is None:
-                piece_idx = type_of_figure(field[2:])
-                if piece_idx is None:
-                    continue
+                continue
         if held_piece == -1:
             click_key(hold)
             held_piece = piece_idx
@@ -33,7 +31,6 @@ def main():
         print(field)
         print(f'chosen placement for figure {piece_idx}, ({placement[0]}, {placement[1]}) with score {placement[2]}')
         place_piece(placement[0], placement[1])
-        time.sleep(0.4)
 
 
 if __name__ == '__main__':

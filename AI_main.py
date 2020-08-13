@@ -78,7 +78,7 @@ def choose_action(field, piece_idx):
     :param piece_idx:
     :return: [rotation, x_pos], max_score
     """
-    results = all_landings(field[4:], piece_idx)
+    results = all_landings(field[3:], piece_idx)
     for i in range(len(results)):
         results[i].append(get_score(deepcopy(results[i][0])))
     results.sort(key=lambda x: x[3], reverse=True)
@@ -94,4 +94,6 @@ def place_piece(rotation, x_pos):
             click_key(mv_right)
         else:
             click_key(mv_left)
+    click_key(fall_faster)
+    click_key(fall_faster)
     click_key(place_k)
