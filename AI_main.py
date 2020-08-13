@@ -12,6 +12,7 @@ class AI:
         self.start_time = time.time()
         self.held_piece = -1
         self.line_held = False
+        self.scared = False
 
     def hold_piece(self, piece_idx):
         click_key(hold)
@@ -50,13 +51,15 @@ class AI:
         """
         tops = [100]*10
         blank_cnt = 0
+        blank_depth = 0
         for i in range(len(field)):
             for j in range(FIELD_SIZE[1]):
                 if field[i][j] and tops[j] == 100:
                     tops[j] = i
                 elif not field[i][j] and tops[j] != 100:
                     blank_cnt += 1
-        return blank_cnt, 17 - min(tops), tops
+                    blank_depth += i - tops[j] - 1
+        return blank_cnt, 17 - min(tops), tops, blank_depth
 
     @staticmethod
     def almost_full_line(field):
@@ -78,7 +81,7 @@ class AI:
                 gap_idx.append(-1)
         curr_pit = -1
         pit_height = 0
-        for i in range(len(field)):
+        for i in range(len(field)-1, -1, -1):
             if curr_pit == -1 and gap_idx[i] != -1 and tops[gap_idx[i]] > i:
                 curr_pit = gap_idx[i]
                 pit_height += 1
@@ -100,18 +103,30 @@ class AI:
         clear = self.clear_line(field)
         field = clear[0]
         score += clear[1]
+        if clear[1] >= 4:
+            score += 20
 
         roofs = self.find_roofs(field)
         score -= roofs[0] * 5
+        score -= roofs[3]
         score -= round(roofs[1] ** 1.4, 2)
+        if self.scared:
+            score -= round(roofs[1] ** 2, 2)
         score += self.almost_full_line(field)
 
-        if self.line_held and roofs[1] >= 5:
+        if self.line_held and not self.scared:
             pit_height = self.find_pit(field, roofs[2])
-            score += (2*pit_height) ** 2
+            score += 5*pit_height
             if pit_height >= 4:
                 print('opportunity for a full pit')
         return score
+
+    def calc_best(self, field, piece_idx):
+        results = all_landings(field[3:], piece_idx)
+        for i in range(len(results)):
+            results[i].append(self.get_score(deepcopy(results[i][0])))
+        results.sort(key=lambda x: x[3], reverse=True)
+        return results
 
     def choose_action(self, field, piece_idx):
         """
@@ -120,22 +135,22 @@ class AI:
         :param piece_idx:
         :return: [rotation, x_pos, max_score]
         """
+        if self.find_roofs(field[3:].tolist())[1] >= 13:
+            self.scared = True
+            print('scared')
+        else:
+            self.scared = False
+        print(self.find_pit(field[3:].tolist(), self.find_roofs(field[3:].tolist())[2]))
         if self.find_pit(field[3:].tolist(), self.find_roofs(field[3:].tolist())[2]) >= 4:
             print('FULL PIT FOUND!!')
             if self.line_held:
                 piece_idx = self.hold_piece(piece_idx)
+        elif piece_idx == 0 and not self.line_held and not self.scared:
+            piece_idx = self.hold_piece(piece_idx)
 
-        results = all_landings(field[3:], piece_idx)
-        for i in range(len(results)):
-            results[i].append(self.get_score(deepcopy(results[i][0])))
-        results.sort(key=lambda x: x[3], reverse=True)
-
-        if not self.line_held:
-            results_held = all_landings(field[3:], self.held_piece)
-            for i in range(len(results_held)):
-                results_held[i].append(self.get_score(deepcopy(results_held[i][0])))
-            results_held.sort(key=lambda x: x[3], reverse=True)
-
+        results = self.calc_best(field, piece_idx)
+        if not self.line_held or self.scared:
+            results_held = self.calc_best(field, self.held_piece)
             if results_held[0][3] > results[0][3]:
                 self.hold_piece(piece_idx)
                 return results_held[0][1], results_held[0][2], results_held[0][3]
