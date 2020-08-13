@@ -3,6 +3,7 @@ import numpy as np
 from direct_keys import *
 from copy import deepcopy
 import time
+from figures import piece_weight
 
 FIELD_SIZE = [20, 10]
 
@@ -110,13 +111,13 @@ class AI:
 
         clear = self.clear_line(field)
         field = clear[0]
-        score += clear[1]
+        score += (3 * clear[1]) ** 2
         if clear[1] >= 4:
             score += 100
 
         roofs = self.find_roofs(field)
         score -= roofs[0] * 3
-        score -= roofs[3] * 0.5
+        score -= roofs[3]
         score -= roofs[1]
         if self.scared:
             score -= 2 * roofs[1]
@@ -160,7 +161,7 @@ class AI:
         results = self.calc_best(field, piece_idx)
         if not self.line_held or self.scared or not self.try_tetris:
             results_held = self.calc_best(field, self.held_piece)
-            if results_held[0][3] > results[0][3]:
+            if (results_held[0][3] + piece_weight(self.held_piece)) > (results[0][3] + piece_weight(piece_idx)):
                 self.hold_piece(piece_idx)
                 return results_held[0][1], results_held[0][2], results_held[0][3]
 

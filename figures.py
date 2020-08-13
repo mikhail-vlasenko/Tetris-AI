@@ -62,3 +62,8 @@ def type_of_figure(arr):
         return 5
     elif figure == [[0, 1, 1, 0], [1, 1, 0, 0]]:
         return 6
+
+
+def piece_weight(piece):
+    weights = [0, 7, 5, 7, 7, 10, 10]  # additional score
+    return weights[piece]
