@@ -11,19 +11,21 @@ def main():
     while True:
         field = get_field()
         piece_idx = type_of_figure(field)
-        piece_idx2 = type_of_figure(field[1:])
         if piece_idx is None:
-            piece_idx = deepcopy(piece_idx2)
+            piece_idx = type_of_figure(field[1:])
             if piece_idx is None:
-                continue
+                piece_idx = type_of_figure(field[2:])
+                if piece_idx is None:
+                    continue
         if held_piece == -1:
             click_key(hold)
             held_piece = piece_idx
+            print(f'piece {piece_idx} held')
             continue
         field = get_field()
         placement = choose_action(field, piece_idx)
         placement_held = choose_action(field, held_piece)
-        if placement_held > placement:
+        if placement_held[2] > placement[2]:
             click_key(hold)
             print(f'piece {piece_idx} held')
             piece_idx, held_piece = held_piece, piece_idx
@@ -35,5 +37,5 @@ def main():
 
 
 if __name__ == '__main__':
-    time.sleep(3)
+    time.sleep(2)
     main()

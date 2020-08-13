@@ -50,7 +50,7 @@ class Input(ctypes.Structure):
                 ("ii", Input_I)]
 
 
-# Actuals Functions
+# Actual Functions
 def press_key(hex_code):
     extra = ctypes.c_ulong(0)
     ii_ = Input_I()
@@ -69,5 +69,6 @@ def release_key(hex_code):
 
 def click_key(hex_code):
     press_key(hex_code)
-    time.sleep(0.12)
+    time.sleep(0.07)
     release_key(hex_code)
+    time.sleep(0.05)

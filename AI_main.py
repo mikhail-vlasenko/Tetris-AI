@@ -41,6 +41,16 @@ def find_roofs(field):
     return blank_cnt, 17 - min(tops)
 
 
+def almost_full_line(field):
+    score = 0
+    for i in range(len(field)):
+        if sum(field[i]) == 9:
+            score += 1
+        if sum(field[i]) == 8:
+            score += 0.5
+    return score
+
+
 def get_score(field):
     """
     tells how good a position is
@@ -56,7 +66,8 @@ def get_score(field):
 
     roofs = find_roofs(field)
     score -= roofs[0] * 5
-    score -= roofs[1] ** 1.2
+    score -= round(roofs[1] ** 1.3, 2)
+    score += almost_full_line(field)
     return score
 
 
@@ -67,7 +78,7 @@ def choose_action(field, piece_idx):
     :param piece_idx:
     :return: [rotation, x_pos], max_score
     """
-    results = all_landings(field[3:], piece_idx)
+    results = all_landings(field[4:], piece_idx)
     for i in range(len(results)):
         results[i].append(get_score(deepcopy(results[i][0])))
     results.sort(key=lambda x: x[3], reverse=True)
