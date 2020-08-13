@@ -5,8 +5,11 @@ from figures import type_of_figure
 from AI_main import AI
 
 
+TRY_TETRIS = False
+
+
 def main():
-    ai = AI()
+    ai = AI(try_tetris=TRY_TETRIS)
     while True:
         field = get_field()
         piece_idx = type_of_figure(field)

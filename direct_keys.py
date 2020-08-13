@@ -8,7 +8,8 @@ mv_left = 0x1E   # A
 place_k = 0x1F   # S
 mv_right = 0x20  # D
 hold = 0x10      # Q
-mv_down = 0x12  # E
+mv_down = 0x12   # E
+rot_counterclock = 0x13  # R
 
 left_mouse = 0x100
 right_mouse = 0x101
