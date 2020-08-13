@@ -71,6 +71,6 @@ def release_key(hex_code):
 
 def click_key(hex_code):
     press_key(hex_code)
-    time.sleep(0.075)
+    time.sleep(0.02)  # it seems there are no misclicks even with this delay
     release_key(hex_code)
-    time.sleep(0.075)
+    time.sleep(0.02)
