@@ -31,7 +31,7 @@ def cmp_pixel(p1, p2):
     return abs(p1[0] - p2[0]) + abs(p1[1] - p2[1]) + abs(p1[2] - p2[2])
 
 
-def get_figur(next_figure):
+def get_figure(next_figure):
     pD((next_figure,), 5)
     next_figure = next_figure[15:25, 15:22]
     pD((next_figure,), 5)
@@ -47,12 +47,14 @@ def get_figur(next_figure):
 
 
 def get_next_3(img):
-    n3xt = img[315:505, 450:475]
+    # n3xt = img[315:505, 450:475]  # alexnurin
+    n3xt = img[340:540, 485:560]  # Misha
     next1 = n3xt[30:75]
     next2 = n3xt[90:135]
-    next3 = n3xt[145:190]
+    # next3 = n3xt[145:190]
+    next3 = n3xt[150:195]  # Misha
     # pD((img, n3xt, next1, next2, next3))
-    return get_figur(next1), get_figur(next2), get_figur(next3)
+    return get_figure(next1), get_figure(next2), get_figure(next3)
 
 
 def get_field():

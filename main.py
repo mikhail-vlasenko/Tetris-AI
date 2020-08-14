@@ -6,10 +6,13 @@ from AI_main import AI
 import numpy as np
 
 
+PLAY_SAFE = False
+
+
 def main():
     can_hold_flag = True
     expected_rwd = 0
-    ai = AI()
+    ai = AI(PLAY_SAFE)
     while True:
         field = get_field()
         piece_idx = type_of_figure(field)

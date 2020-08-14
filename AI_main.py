@@ -10,7 +10,8 @@ FIELD_SIZE = [20, 10]
 
 
 class AI:
-    def __init__(self):
+    def __init__(self, play_safe):
+        self.play_safe = play_safe
         self.start_time = time.time()
         self.held_piece = -1
         self.focus_blank = False
@@ -65,11 +66,12 @@ class AI:
     def almost_full_line(field):
         score = 0
         for i in range(len(field)):
-            if sum(field[i]) == 9:
+            ssum = np.sum(field[i])
+            if ssum == 9:
                 score += 2
-            if sum(field[i]) == 8:
+            if ssum == 8:
                 score += 1
-            if sum(field[i]) == 7:
+            if ssum == 7:
                 score += 0.5
         return score
 
@@ -77,7 +79,7 @@ class AI:
     def find_pit(field, tops):
         gap_idx = []
         for i in range(len(field)):
-            if sum(field[i]) == 9:
+            if np.sum(field[i]) == 9:
                 gap_idx.append(np.where(field[i] == 0))
             else:
                 gap_idx.append(-1)
@@ -225,7 +227,7 @@ class AI:
             cls.place_piece(piece, rotation, x_pos, rot_now=actual_pos[0][0], x_pos_now=actual_pos[0][1], depth=depth+1)
 
     def place_piece_delay(self):
-        if time.time() - self.start_time < 180 and not self.scared:
+        if time.time() - self.start_time < 160 and not self.scared and not self.play_safe:
             if time.time() - self.start_time < 120:
                 click_key(mv_down)
             click_key(mv_down)
