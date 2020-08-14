@@ -133,7 +133,7 @@ class AI:
 
         score -= roofs[0] * 10  # blank spaces
         score -= roofs[3] * 2
-        score -= 2 * roofs[1]
+        score -= roofs[1] ** 1.4
         score -= self.find_hole(roofs[2]) * 10
         if self.focus_blank:
             score -= roofs[3] * 3

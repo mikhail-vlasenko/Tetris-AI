@@ -38,3 +38,12 @@ def get_field():
         kek = np.array(arr / iters + 0.5, int)
         pD((kek, field, field_old))
         return kek
+
+
+def clear_grey_squares(field):
+    flag = False
+    for i in range(len(field) - 1, -1, -1):
+        if np.sum(field[i]) == 10 or flag:
+            field[i] = np.zeros(10)
+            flag = True
+    return field

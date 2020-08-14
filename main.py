@@ -1,6 +1,6 @@
 import time
 from copy import deepcopy
-from digit import get_field
+from digit import get_field, clear_grey_squares
 from figures import type_of_figure
 from AI_main import AI
 import numpy as np
@@ -29,6 +29,7 @@ def main():
             time.sleep(0.2)
         else:
             field = get_field()
+            field = clear_grey_squares(field)
         print(field)
         if expected_rwd != ai.get_score(field[3:], verbose=True)[0]:
             print('\nit was a misclick\n')
