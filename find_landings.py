@@ -28,6 +28,12 @@ def land(field, piece, pos_now):
 
 
 def all_landings(field, piece_index):
+    """
+    calculates all possible results
+    :param field:
+    :param piece_index:
+    :return: [resulting field, rotation, x_position]
+    """
     results = []
     for rotation in range(len(pieces[piece_index])):
         for x_pos in range(-3, 10):

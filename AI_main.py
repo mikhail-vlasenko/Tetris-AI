@@ -18,7 +18,7 @@ class AI:
 
     def hold_piece(self, piece_idx):
         click_key(hold)
-        print(f'piece {piece_idx} held')
+        print(f'piece {piece_idx} held, {self.held_piece} released')
         piece_idx, self.held_piece = self.held_piece, piece_idx
         if self.held_piece == 0:
             self.line_held = True
@@ -36,10 +36,10 @@ class AI:
         full_cnt = 0
         i = 0
         while i < len(field):
-            if all(field[i]) == 1:
+            if np.sum(field[i]) == FIELD_SIZE[1]:
                 full_cnt += 1
-                del field[i]
-                field.insert(0, [0]*FIELD_SIZE[1])
+                field = np.delete(field, i, axis=0)
+                field = np.insert(field, 0, np.zeros(FIELD_SIZE[1]), axis=0)
             else:
                 i += 1
         return field, full_cnt
@@ -49,7 +49,7 @@ class AI:
         """
         finds blank squares under landed pieces
         :param field:
-        :return:
+        :return: blank_cnt, height, [height of lines], blank_cumulative_depth
         """
         tops = np.zeros((10, 2))
         blank_cnt = 0
@@ -82,7 +82,7 @@ class AI:
         gap_idx = []
         for i in range(len(field)):
             if sum(field[i]) == 9:
-                gap_idx.append(field[i].index(0))
+                gap_idx.append(np.where(field[i] == 0))
             else:
                 gap_idx.append(-1)
         curr_pit = -1
@@ -116,10 +116,10 @@ class AI:
         """
         tells how good a position is
         :param field:
+        :param verbose: if True prints debug info
         :return:
         """
         expect_tetris = False
-        field = field.tolist()
         score = 0
         clear = self.clear_line(field)
         field = clear[0]
@@ -135,14 +135,14 @@ class AI:
                 expect_tetris = True
             return score, expect_tetris
 
-        score -= roofs[0] * 10  # blank spaces
+        score -= roofs[0] * 15  # blank spaces
         score -= roofs[3] * 3
         score -= 2 * roofs[1]
         score += self.almost_full_line(field)
         if roofs[2][9] != 0:
             score -= 10  # the most right column should be empty
             score -= roofs[2][9]
-        score -= 5 * clear[1]
+        score -= 3 * clear[1]
         if clear[1] >= 4:
             score += 1000
             expect_tetris = True
@@ -158,18 +158,25 @@ class AI:
         return score, expect_tetris
 
     def calc_best(self, field, piece_idx):
+        """
+        chooses the best landing for a piece
+        :param field:
+        :param piece_idx:
+        :return: best resulting field, rotation, x_position, [max_score, expect_tetris]
+        """
         results = all_landings(field[3:], piece_idx)
         for i in range(len(results)):
             results[i].append(self.get_score(deepcopy(results[i][0])))
         results.sort(key=lambda x: x[3][0], reverse=True)
-        return results
+        return results[0]
 
     def choose_action(self, field, piece_idx, can_hold):
         """
-        finds the best action to take
+        finds the best action to take in the situation
         :param field:
         :param piece_idx:
-        :return: [rotation, x_pos, max_score]
+        :param can_hold: in the beginning it can't hold because it already held on this turn
+        :return: rotation, x_pos, max_score, expect_tetris, resulting field, piece to put
         """
         if self.find_roofs(field[3:].tolist())[1] >= 14:
             self.scared = True
@@ -180,15 +187,18 @@ class AI:
 
         results = self.calc_best(field, piece_idx)
         results_held = self.calc_best(field, self.held_piece)
-        if (results_held[0][3][0] + piece_weight(self.held_piece)) > (results[0][3][0] + piece_weight(piece_idx)) \
+        if (results_held[3][0] + piece_weight(self.held_piece)) > (results[3][0] + piece_weight(piece_idx)) \
                 and can_hold:
             piece_idx = self.hold_piece(piece_idx)
-            return results_held[0][1], results_held[0][2], results_held[0][3][0], results_held[0][3][1], piece_idx
+            return results_held[1], results_held[2], results_held[3][0], results_held[3][1], results_held[0], piece_idx
 
-        return results[0][1], results[0][2], results[0][3][0], results[0][3][1], piece_idx
+        return results[1], results[2], results[3][0], results[3][1], results[0], piece_idx
 
     @classmethod
-    def place_piece(cls, piece, rotation, x_pos, rot_now=0, x_pos_now=3):
+    def place_piece(cls, piece, rotation, x_pos, rot_now=0, x_pos_now=3, depth=0):
+        if depth == 3:
+            print('depth 3 reached')
+            return
         rotate = (rotation - rot_now) % 4
         if rotate < 3:
             for i in range(rotate):
@@ -202,14 +212,14 @@ class AI:
             else:
                 click_key(mv_left)
 
-        time.sleep(0.04)
+        time.sleep(0.07)
         field = get_field()
         actual_pos = find_figure(field, piece)
         if not actual_pos:
             print('piece not found')
         elif [rotation, x_pos] not in actual_pos:
             print(f'misclick spotted, position {actual_pos[0]}, should be {rotation, x_pos}')
-            cls.place_piece(piece, rotation, x_pos, rot_now=actual_pos[0][0], x_pos_now=actual_pos[0][1])
+            cls.place_piece(piece, rotation, x_pos, rot_now=actual_pos[0][0], x_pos_now=actual_pos[0][1], depth=depth+1)
 
     def place_piece_delay(self):
         if time.time() - self.start_time < 200 and not self.scared:
@@ -217,6 +227,8 @@ class AI:
                 click_key(mv_down)
             click_key(mv_down)
             click_key(place_k)
-            time.sleep(0.4)
+            time.sleep(0.45)
         else:
-            click_key(mv_down)
+            press_key(mv_down)
+            time.sleep(0.5)
+            release_key(mv_down)
