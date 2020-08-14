@@ -33,11 +33,11 @@ def cmp_pixel(p1, p2):
 
 
 def get_figur(next_figure):
-    # pD((next_figure,), 5)
-    next_figure = next_figure[20:25, 15:20]
-    # pD((next_figure,))
-    for i in range(5):
-        for j in range(5):
+    pD((next_figure,), 5)
+    next_figure = next_figure[15:25, 15:22]
+    pD((next_figure,), 5)
+    for i in range(len(next_figure)):
+        for j in range(len(next_figure[0])):
             p = next_figure[i, j][:3]
             for k in range(7):
                 res = cmp_pixel(d[k], p)
@@ -67,7 +67,7 @@ def get_field():
         field = np.array(field != [12, 26, 73][index_color], int)
         # pD((img, field_old, field))
         a, b, c = get_next_3(img)
-        print(a, b, c)
+        #print(a, b, c)
 
         sizeCell = field.shape[0] // 20
         arr = np.zeros((20, 10))
@@ -76,7 +76,7 @@ def get_field():
             arr += field[i::sizeCell, i::sizeCell][:20, :10]
 
         kek = np.array(arr / iters + 0.5, int)
-        pD((kek, field, field_old))
+        #pD((kek, field, field_old, img))
         return kek
 
 
