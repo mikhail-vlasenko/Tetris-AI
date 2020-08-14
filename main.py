@@ -7,11 +7,15 @@ import numpy as np
 
 
 def main():
+    print('q')
     can_hold_flag = True
     expected_rwd = 0
     ai = AI()
+    i = 0
     while True:
+        i+=1
         field = get_field()
+        #print(field)
         piece_idx = type_of_figure(field)
         if piece_idx is None:
             piece_idx = type_of_figure(field[1:])
