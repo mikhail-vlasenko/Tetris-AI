@@ -47,6 +47,15 @@ def get_figur(next_figure):
     return -1
 
 
+def get_next_3(img):
+    n3xt = img[315:505, 450:475]
+    next1 = n3xt[30:75]
+    next2 = n3xt[90:135]
+    next3 = n3xt[145:190]
+    # pD((img, n3xt, next1, next2, next3))
+    return get_figur(next1), get_figur(next2), get_figur(next3)
+
+
 def get_field():
     index_color = 1
     # img = np.array(ImageGrab.grab())[:1000, :550][:, :, index_color]  # CUSTOM
@@ -56,7 +65,9 @@ def get_field():
         field = img[370:970, 155:455]  # CUSTOM
         field_old = field
         field = np.array(field != [12, 26, 73][index_color], int)
-        pD((img, field_old, field))
+        # pD((img, field_old, field))
+        a, b, c = get_next_3(img)
+        print(a, b, c)
 
         sizeCell = field.shape[0] // 20
         arr = np.zeros((20, 10))
