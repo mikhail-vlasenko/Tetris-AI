@@ -5,13 +5,10 @@ from figures import type_of_figure
 from AI_main import AI
 
 
-TRY_TETRIS = False
-
-
 def main():
     can_hold_flag = True
     expected_rwd = 0
-    ai = AI(try_tetris=TRY_TETRIS)
+    ai = AI()
     while True:
         field = get_field()
         piece_idx = type_of_figure(field)
@@ -25,7 +22,7 @@ def main():
             time.sleep(0.2)
             continue
         if 'placement' in locals() and placement[3]:
-            time.sleep(0.5)
+            time.sleep(0.6)  # wait for TETRIS to disappear (may be too long for late stages)
         field = get_field()
         if expected_rwd != ai.get_score(field[3:], verbose=True)[0]:
             print('\nit was a misclick\n')
@@ -33,7 +30,8 @@ def main():
         print(field)
         print(f'chosen placement for figure {placement[4]}, ({placement[0]}, {placement[1]}) with score {placement[2]}')
         expected_rwd = placement[2]
-        ai.place_piece(placement[0], placement[1])
+        ai.place_piece(placement[4], placement[0], placement[1])
+        ai.place_piece_delay()
         can_hold_flag = True
 
 

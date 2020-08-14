@@ -64,6 +64,23 @@ def type_of_figure(arr):
         return 6
 
 
-def piece_weight(piece):
+def piece_weight(figure):
     weights = [0, 7, 5, 7, 7, 10, 10]  # additional score
-    return weights[piece]
+    return weights[figure]
+
+
+def find_figure(field, figure):
+    possible = []
+    for rot in range(len(array_of_figures[figure])):
+        for y_pos in range(4):
+            for x_pos in range(-3, len(field[0])):
+                flag = True
+                for i in range(4):
+                    for j in range(4):
+                        if array_of_figures[figure][rot][i][j]:
+                            if y_pos + i >= len(field) or x_pos + j >= len(field[0]) or y_pos + i < 0 or\
+                                    x_pos + j < 0 or not field[y_pos + i][x_pos + j]:
+                                flag = False
+                if flag:
+                    possible.append([rot, x_pos])
+    return possible

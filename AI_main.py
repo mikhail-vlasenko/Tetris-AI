@@ -3,14 +3,14 @@ import numpy as np
 from direct_keys import *
 from copy import deepcopy
 import time
-from figures import piece_weight
+from figures import piece_weight, find_figure
+from digit import get_field
 
 FIELD_SIZE = [20, 10]
 
 
 class AI:
-    def __init__(self, try_tetris):
-        self.try_tetris = try_tetris
+    def __init__(self):
         self.start_time = time.time()
         self.held_piece = -1
         self.line_held = False
@@ -103,13 +103,13 @@ class AI:
     @staticmethod
     def find_hole(tops):
         cnt_hole = 0
-        np.insert(tops, 0, 100)
-        tops[-1] = 100  # not using last column, so lets say its high
-        for i in range(1, len(tops)):
+        tops = np.insert(tops, 0, 20)
+        tops[-1] = 20  # not using last column, so lets say its high
+        for i in range(1, len(tops) - 1):
             if tops[i - 1] - 2 > tops[i] and tops[i] < tops[i + 1] - 2:
                 cnt_hole += 1
             if tops[i - 1] - 4 > tops[i] and tops[i] < tops[i + 1] - 4:
-                cnt_hole += 1
+                cnt_hole += min(tops[i - 1] - 4 - tops[i], tops[i + 1] - 4 - tops[i])
         return cnt_hole
 
     def get_score(self, field, verbose=False):
@@ -128,25 +128,27 @@ class AI:
             score += 10 * clear[1]
             score -= roofs[0] * 3  # blank spaces
             score -= roofs[3]
-            score -= 3 * roofs[1]
+            score -= 4 * roofs[1]
             score += self.almost_full_line(field)
             if clear[1] >= 4:
-                score += 100
+                score += 1000
                 expect_tetris = True
             return score, expect_tetris
 
         score -= roofs[0] * 10  # blank spaces
         score -= roofs[3] * 3
+        score -= 2 * roofs[1]
         score += self.almost_full_line(field)
         if roofs[2][9] != 0:
             score -= 10  # the most right column should be empty
             score -= roofs[2][9]
+        score -= 5 * clear[1]
         if clear[1] >= 4:
             score += 1000
             expect_tetris = True
         score -= self.find_hole(roofs[2]) * 10
         pit_height = self.find_pit(field, roofs[2])
-        score += 5 * pit_height
+        # score += 5 * pit_height
         if verbose:
             print(clear[1])
             print(roofs)
@@ -185,18 +187,31 @@ class AI:
 
         return results[0][1], results[0][2], results[0][3][0], results[0][3][1], piece_idx
 
-    def place_piece(self, rotation, x_pos):
-        if rotation < 3:
-            for i in range(rotation):
+    @classmethod
+    def place_piece(cls, piece, rotation, x_pos, rot_now=0, x_pos_now=3):
+        rotate = (rotation - rot_now) % 4
+        if rotate < 3:
+            for i in range(rotate):
                 click_key(rotate_k)
         else:
             click_key(rot_counterclock)
-        move = x_pos - 3  # 3 is the starting position
+        move = x_pos - x_pos_now  # 3 is the starting position
         for i in range(abs(move)):
             if move > 0:
                 click_key(mv_right)
             else:
                 click_key(mv_left)
+
+        time.sleep(0.04)
+        field = get_field()
+        actual_pos = find_figure(field, piece)
+        if not actual_pos:
+            print('piece not found')
+        elif [rotation, x_pos] not in actual_pos:
+            print(f'misclick spotted, position {actual_pos[0]}, should be {rotation, x_pos}')
+            cls.place_piece(piece, rotation, x_pos, rot_now=actual_pos[0][0], x_pos_now=actual_pos[0][1])
+
+    def place_piece_delay(self):
         if time.time() - self.start_time < 200 and not self.scared:
             if time.time() - self.start_time < 120:
                 click_key(mv_down)
