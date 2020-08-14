@@ -13,17 +13,13 @@ class AI:
     def __init__(self):
         self.start_time = time.time()
         self.held_piece = -1
-        self.line_held = False
+        self.focus_blank = False
         self.scared = False
 
     def hold_piece(self, piece_idx):
         click_key(hold)
         print(f'piece {piece_idx} held, {self.held_piece} released')
         piece_idx, self.held_piece = self.held_piece, piece_idx
-        if self.held_piece == 0:
-            self.line_held = True
-        else:
-            self.line_held = False
         return piece_idx
 
     @staticmethod
@@ -124,29 +120,30 @@ class AI:
         clear = self.clear_line(field)
         field = clear[0]
         roofs = self.find_roofs(field)
+        score += self.almost_full_line(field)
+        if clear[1] >= 4:
+            score += 1000
+            expect_tetris = True
         if self.scared:
             score += 10 * clear[1]
             score -= roofs[0] * 3  # blank spaces
             score -= roofs[3]
             score -= 4 * roofs[1]
-            score += self.almost_full_line(field)
-            if clear[1] >= 4:
-                score += 1000
-                expect_tetris = True
             return score, expect_tetris
 
-        score -= roofs[0] * 15  # blank spaces
-        score -= roofs[3] * 3
+        score -= roofs[0] * 10  # blank spaces
+        score -= roofs[3] * 2
         score -= 2 * roofs[1]
-        score += self.almost_full_line(field)
+        score -= self.find_hole(roofs[2]) * 10
+        if self.focus_blank:
+            score -= roofs[3] * 3
+            score += 3 * clear[1]
+            return score, expect_tetris
+
+        score -= 3 * clear[1]
         if roofs[2][9] != 0:
             score -= 10  # the most right column should be empty
             score -= roofs[2][9]
-        score -= 3 * clear[1]
-        if clear[1] >= 4:
-            score += 1000
-            expect_tetris = True
-        score -= self.find_hole(roofs[2]) * 10
         pit_height = self.find_pit(field, roofs[2])
         # score += 5 * pit_height
         if verbose:
@@ -178,11 +175,17 @@ class AI:
         :param can_hold: in the beginning it can't hold because it already held on this turn
         :return: rotation, x_pos, max_score, expect_tetris, resulting field, piece to put
         """
-        if self.find_roofs(field[3:].tolist())[1] >= 14:
+        roofs = self.find_roofs(field[3:].tolist())
+        if roofs[1] >= 14:
             self.scared = True
             print('scared')
         else:
             self.scared = False
+        if roofs[0] > 0:
+            self.focus_blank = True
+            print('focusing blank')
+        else:
+            self.focus_blank = False
         print(self.find_pit(field[3:].tolist(), self.find_roofs(field[3:].tolist())[2]))
 
         results = self.calc_best(field, piece_idx)
@@ -222,7 +225,7 @@ class AI:
             cls.place_piece(piece, rotation, x_pos, rot_now=actual_pos[0][0], x_pos_now=actual_pos[0][1], depth=depth+1)
 
     def place_piece_delay(self):
-        if time.time() - self.start_time < 200 and not self.scared:
+        if time.time() - self.start_time < 180 and not self.scared:
             if time.time() - self.start_time < 120:
                 click_key(mv_down)
             click_key(mv_down)
@@ -230,5 +233,5 @@ class AI:
             time.sleep(0.45)
         else:
             press_key(mv_down)
-            time.sleep(0.5)
+            time.sleep(max(0., 0.5 - (time.time() - self.start_time) / 1000))
             release_key(mv_down)

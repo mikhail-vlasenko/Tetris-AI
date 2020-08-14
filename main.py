@@ -24,7 +24,7 @@ def main():
             continue
         if 'placement' in locals() and placement[3]:
             # hoping that it was not a misclick, not taking a screenshot because TETRIS block the view
-            field = np.zeros((3, 10))
+            field = np.zeros((3, 10), dtype=np.int)
             field = np.concatenate((field, ai.clear_line(placement[4])[0]))
             time.sleep(0.2)
         else:
