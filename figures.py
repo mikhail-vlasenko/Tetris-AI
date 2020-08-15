@@ -67,7 +67,7 @@ def type_of_figure(arr):
 
 
 def piece_weight(figure):
-    weights = [0, 7, 5, 7, 7, 10, 10]  # additional score
+    weights = [0, 8, 7, 7, 7, 10, 10]  # additional score
     return weights[figure]
 
 

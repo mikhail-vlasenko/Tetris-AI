@@ -32,9 +32,8 @@ def main():
             field = np.zeros((3, 10), dtype=np.int)
             field = np.concatenate((field, ai.clear_line(placement[4])[0]))
             time.sleep(0.2)
-        else:
+        elif not ai.scared:
             field = get_field()
-            field = clear_grey_squares(field)
         print(field)
         if expected_rwd != ai.get_score(field[3:], verbose=True)[0]:
             print('\nit was a misclick\n')

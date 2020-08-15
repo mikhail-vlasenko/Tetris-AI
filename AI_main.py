@@ -178,7 +178,7 @@ class AI:
         :return: rotation, x_pos, max_score, expect_tetris, resulting field, current height, piece to put
         """
         roofs = self.find_roofs(field[3:].tolist())
-        if roofs[1] >= 14:
+        if roofs[1] >= 14 or time.time() - self.start_time > 300:
             self.scared = True
             print('scared')
         else:
