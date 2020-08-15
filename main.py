@@ -19,7 +19,9 @@ def main():
         if piece_idx is None:
             piece_idx = type_of_figure(field[1:])
             if piece_idx is None:
-                continue
+                piece_idx = type_of_figure(field[2:])
+                if piece_idx is None:
+                    continue
         if ai.held_piece == -1:
             ai.hold_piece(piece_idx)
             can_hold_flag = False
@@ -37,11 +39,11 @@ def main():
         if expected_rwd != ai.get_score(field[3:], verbose=True)[0]:
             print('\nit was a misclick\n')
         placement = ai.choose_action(field, piece_idx, can_hold_flag)
-        print(f'chosen placement for figure {placement[5]}, ({placement[0]}, {placement[1]}) with score {placement[2]}')
+        print(f'chosen placement for figure {placement[6]}, ({placement[0]}, {placement[1]}) with score {placement[2]}')
         if placement[3]:
             print('expecting TETRIS')
         expected_rwd = placement[2]
-        ai.place_piece(placement[5], placement[0], placement[1])
+        ai.place_piece(placement[6], placement[0], placement[1], placement[5])
         ai.place_piece_delay()
         can_hold_flag = True
 

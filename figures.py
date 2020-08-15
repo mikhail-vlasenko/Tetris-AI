@@ -71,10 +71,11 @@ def piece_weight(figure):
     return weights[figure]
 
 
-def find_figure(field, figure):
+def find_figure(field, figure, up_to):
     possible = []
+    print(f'looking up to {up_to}')
     for rot in range(len(array_of_figures[figure])):
-        for y_pos in range(4):
+        for y_pos in range(up_to):
             for x_pos in range(-3, len(field[0])):
                 flag = True
                 for i in range(4):

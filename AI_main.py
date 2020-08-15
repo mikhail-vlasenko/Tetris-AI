@@ -60,7 +60,7 @@ class AI:
                 elif not field[i][j] and tops[j][0] != 0:
                     blank_cnt += 1
                     blank_depth += tops[j][1] - 1
-        return blank_cnt, np.max(tops[:, 0]), tops[:, 0], blank_depth
+        return blank_cnt, int(np.max(tops[:, 0])), tops[:, 0], blank_depth
 
     @staticmethod
     def almost_full_line(field):
@@ -175,7 +175,7 @@ class AI:
         :param field:
         :param piece_idx:
         :param can_hold: in the beginning it can't hold because it already held on this turn
-        :return: rotation, x_pos, max_score, expect_tetris, resulting field, piece to put
+        :return: rotation, x_pos, max_score, expect_tetris, resulting field, current height, piece to put
         """
         roofs = self.find_roofs(field[3:].tolist())
         if roofs[1] >= 14:
@@ -188,19 +188,19 @@ class AI:
             print('focusing blank')
         else:
             self.focus_blank = False
-        print(self.find_pit(field[3:].tolist(), self.find_roofs(field[3:].tolist())[2]))
+        # print(self.find_pit(field[3:].tolist(), self.find_roofs(field[3:].tolist())[2]))
 
         results = self.calc_best(field, piece_idx)
         results_held = self.calc_best(field, self.held_piece)
         if (results_held[3][0] + piece_weight(self.held_piece)) > (results[3][0] + piece_weight(piece_idx)) \
                 and can_hold:
             piece_idx = self.hold_piece(piece_idx)
-            return results_held[1], results_held[2], results_held[3][0], results_held[3][1], results_held[0], piece_idx
+            return results_held[1], results_held[2], results_held[3][0], results_held[3][1], results_held[0], roofs[1], piece_idx
 
-        return results[1], results[2], results[3][0], results[3][1], results[0], piece_idx
+        return results[1], results[2], results[3][0], results[3][1], results[0], roofs[1], piece_idx
 
     @classmethod
-    def place_piece(cls, piece, rotation, x_pos, rot_now=0, x_pos_now=3, depth=0):
+    def place_piece(cls, piece, rotation, x_pos, height, rot_now=0, x_pos_now=3, depth=0):
         if depth == 3:
             print('depth 3 reached')
             return
@@ -217,14 +217,16 @@ class AI:
             else:
                 click_key(mv_left)
 
-        time.sleep(0.07)
+        time.sleep(0.04)
         field = get_field()
-        actual_pos = find_figure(field, piece)
+        actual_pos = find_figure(field, piece, max(0, 16 - height))
         if not actual_pos:
             print('piece not found')
         elif [rotation, x_pos] not in actual_pos:
             print(f'misclick spotted, position {actual_pos[0]}, should be {rotation, x_pos}')
-            cls.place_piece(piece, rotation, x_pos, rot_now=actual_pos[0][0], x_pos_now=actual_pos[0][1], depth=depth+1)
+            cls.place_piece(piece, rotation, x_pos, height, rot_now=actual_pos[0][0], x_pos_now=actual_pos[0][1], depth=depth+1)
+        else:
+            print('all good')
 
     def place_piece_delay(self):
         if time.time() - self.start_time < 160 and not self.scared and not self.play_safe:
@@ -233,7 +235,7 @@ class AI:
             click_key(mv_down)
             click_key(place_k)
             time.sleep(0.45)
-        else:
+        elif time.time() - self.start_time < 300:
             press_key(mv_down)
             time.sleep(max(0., 0.5 - (time.time() - self.start_time) / 1000))
             release_key(mv_down)
