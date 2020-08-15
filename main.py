@@ -1,9 +1,10 @@
 import time
 from copy import deepcopy
 from digit import get_field, clear_grey_squares
-from figures import type_of_figure
+from figures import type_figure_ext
 from AI_main import AI
 import numpy as np
+import cProfile
 
 
 PLAY_SAFE = False
@@ -15,13 +16,9 @@ def main():
     ai = AI(PLAY_SAFE)
     while True:
         field = get_field()
-        piece_idx = type_of_figure(field)
+        piece_idx = type_figure_ext(field[:5])
         if piece_idx is None:
-            piece_idx = type_of_figure(field[1:])
-            if piece_idx is None:
-                piece_idx = type_of_figure(field[2:])
-                if piece_idx is None:
-                    continue
+            continue
         if ai.held_piece == -1:
             ai.hold_piece(piece_idx)
             can_hold_flag = False

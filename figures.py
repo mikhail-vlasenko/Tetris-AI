@@ -66,17 +66,26 @@ def type_of_figure(arr):
         return 6
 
 
+def type_figure_ext(field):
+    piece_idx = type_of_figure(field)
+    if piece_idx is None:
+        piece_idx = type_of_figure(field[1:])
+        if piece_idx is None:
+            piece_idx = type_of_figure(field[2:])
+    return piece_idx
+
+
 def piece_weight(figure):
     weights = [0, 8, 7, 7, 7, 10, 10]  # additional score
     return weights[figure]
 
 
-def find_figure(field, figure, up_to):
+def find_figure(field, figure, exp_x_pos, up_to):
     possible = []
     print(f'looking up to {up_to}')
     for rot in range(len(array_of_figures[figure])):
         for y_pos in range(up_to):
-            for x_pos in range(-3, len(field[0])):
+            for x_pos in range(exp_x_pos-3, exp_x_pos+3):
                 flag = True
                 for i in range(4):
                     for j in range(4):

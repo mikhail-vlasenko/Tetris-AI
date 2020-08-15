@@ -201,8 +201,8 @@ class AI:
 
     @classmethod
     def place_piece(cls, piece, rotation, x_pos, height, rot_now=0, x_pos_now=3, depth=0):
-        if depth == 3:
-            print('depth 3 reached')
+        if depth == 2:
+            print('depth 2 reached')
             return
         rotate = (rotation - rot_now) % 4
         if rotate < 3:
@@ -219,9 +219,10 @@ class AI:
 
         time.sleep(0.04)
         field = get_field()
-        actual_pos = find_figure(field, piece, max(0, 16 - height))
+        actual_pos = find_figure(field, piece, x_pos, max(0, 16 - height))
         if not actual_pos:
             print('piece not found')
+            print(field)
         elif [rotation, x_pos] not in actual_pos:
             print(f'misclick spotted, position {actual_pos[0]}, should be {rotation, x_pos}')
             cls.place_piece(piece, rotation, x_pos, height, rot_now=actual_pos[0][0], x_pos_now=actual_pos[0][1], depth=depth+1)
