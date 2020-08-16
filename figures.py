@@ -85,7 +85,7 @@ def find_figure(field, figure, exp_x_pos, up_to):
     print(f'looking up to {up_to}')
     for rot in range(len(array_of_figures[figure])):
         for y_pos in range(up_to):
-            for x_pos in range(exp_x_pos-3, exp_x_pos+3):
+            for x_pos in range(exp_x_pos-3, exp_x_pos+4):
                 flag = True
                 for i in range(4):
                     for j in range(4):

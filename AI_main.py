@@ -217,12 +217,11 @@ class AI:
             else:
                 click_key(mv_left)
 
-        time.sleep(0.04)
+        time.sleep(0.07)
         field = get_field()
         actual_pos = find_figure(field, piece, x_pos, max(0, 16 - height))
         if not actual_pos:
             print('piece not found')
-            print(field)
         elif [rotation, x_pos] not in actual_pos:
             print(f'misclick spotted, position {actual_pos[0]}, should be {rotation, x_pos}')
             cls.place_piece(piece, rotation, x_pos, height, rot_now=actual_pos[0][0], x_pos_now=actual_pos[0][1], depth=depth+1)

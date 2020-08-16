@@ -58,13 +58,11 @@ def get_next_3(img):
 
 
 def get_field():
-    index_color = 1
-    # img = np.array(ImageGrab.grab())[:1000, :550][:, :, index_color]  # CUSTOM
     monitor = {"left": 0, "top": 0, "width": 550, "height": 1000}
     with mss() as sct:
         img = np.array(sct.grab(monitor))
-        # field = img[327:893, 139:422][:, :, index_color]  # alexnurin
-        field = img[370:970, 155:455][:, :, index_color]  # misha
+        # field = img[327:893, 139:422]  # alexnurin
+        field = img[370:970, 155:455]  # misha
 
         field0 = np.array(field[:, :, 0] < 130, int)  # blue
         field1 = np.array(field[:, :, 1] < 100, int)  # green
@@ -74,7 +72,7 @@ def get_field():
         field_white2 = np.array(field[:, :, 2] > 150, int)
         field_white = field_white0 * field_white1 * field_white2
         field = field0 * field1 * field2 + field_white
-
+        field = 1 - field
         # pD((img, field_old, field))
         a, b, c = get_next_3(img)
         # print(a, b, c)
@@ -89,11 +87,3 @@ def get_field():
         # pD((kek, field, field_old, img))
         return kek
 
-
-def clear_grey_squares(field):
-    flag = False
-    for i in range(len(field) - 1, -1, -1):
-        if np.sum(field[i]) == 10 or flag:
-            field[i] = np.zeros(10)
-            flag = True
-    return field
