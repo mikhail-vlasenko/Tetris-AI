@@ -1,5 +1,5 @@
 from copy import deepcopy
-
+from position import Position
 from figures import array_of_figures as pieces
 
 
@@ -35,12 +35,12 @@ def all_landings(field, piece_index):
     calculates all possible results
     :param field:
     :param piece_index:
-    :return: [resulting field, rotation, x_position]
+    :return: Position
     """
     results = []
     for rotation in range(len(pieces[piece_index])):
         for x_pos in range(-3, 10):
             res = land(field, pieces[piece_index][rotation], [0, x_pos], piece_index)
             if res is not None:
-                results.append([res, rotation, x_pos])
+                results.append(Position(res, rotation, x_pos, piece_index))
     return results

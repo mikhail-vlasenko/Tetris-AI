@@ -16,6 +16,7 @@ class AI:
         self.held_piece = -1
         self.focus_blank = False
         self.scared = False
+        self.choices_for_2nd = 5
 
     def hold_piece(self, piece_idx):
         click_key(hold)
@@ -110,6 +111,20 @@ class AI:
                 cnt_hole += min(tops[i - 1] - 4 - tops[i], tops[i + 1] - 4 - tops[i])
         return cnt_hole
 
+    def update_state(self, field):
+        roofs = self.find_roofs(field[3:].tolist())
+        if roofs[1] >= 14 or time.time() - self.start_time > 300:
+            self.scared = True
+            print('scared')
+        else:
+            self.scared = False
+        if roofs[0] > 0:
+            self.focus_blank = True
+            print('focusing blank')
+        else:
+            self.focus_blank = False
+        return roofs
+
     def get_score(self, field, verbose=False):
         """
         tells how good a position is
@@ -161,12 +176,12 @@ class AI:
         chooses the best landing for a piece
         :param field:
         :param piece_idx:
-        :return: best resulting field, rotation, x_position, [max_score, expect_tetris]
+        :return: Position
         """
         results = all_landings(field[3:], piece_idx)
         for i in range(len(results)):
-            results[i].append(self.get_score(deepcopy(results[i][0])))
-        results.sort(key=lambda x: x[3][0], reverse=True)
+            results[i].score, results[i].expect_tetris = self.get_score(deepcopy(results[i].field))
+        results.sort(key=lambda x: x.score, reverse=True)
         return results[0]
 
     def choose_action(self, field, piece_idx, can_hold):
@@ -175,29 +190,19 @@ class AI:
         :param field:
         :param piece_idx:
         :param can_hold: in the beginning it can't hold because it already held on this turn
-        :return: rotation, x_pos, max_score, expect_tetris, resulting field, current height, piece to put
+        :return: Position
         """
-        roofs = self.find_roofs(field[3:].tolist())
-        if roofs[1] >= 14 or time.time() - self.start_time > 300:
-            self.scared = True
-            print('scared')
-        else:
-            self.scared = False
-        if roofs[0] > 0:
-            self.focus_blank = True
-            print('focusing blank')
-        else:
-            self.focus_blank = False
+        self.update_state(field)
         # print(self.find_pit(field[3:].tolist(), self.find_roofs(field[3:].tolist())[2]))
 
-        results = self.calc_best(field, piece_idx)
-        results_held = self.calc_best(field, self.held_piece)
-        if (results_held[3][0] + piece_weight(self.held_piece)) > (results[3][0] + piece_weight(piece_idx)) \
+        result = self.calc_best(field, piece_idx)
+        result_held = self.calc_best(field, self.held_piece)
+        if (result_held.score + piece_weight(self.held_piece)) > (result.score + piece_weight(piece_idx)) \
                 and can_hold:
-            piece_idx = self.hold_piece(piece_idx)
-            return results_held[1], results_held[2], results_held[3][0], results_held[3][1], results_held[0], roofs[1], piece_idx
+            self.hold_piece(piece_idx)
+            return result_held
 
-        return results[1], results[2], results[3][0], results[3][1], results[0], roofs[1], piece_idx
+        return result
 
     @classmethod
     def place_piece(cls, piece, rotation, x_pos, height, rot_now=0, x_pos_now=3, depth=0):
