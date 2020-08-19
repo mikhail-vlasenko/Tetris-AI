@@ -32,6 +32,7 @@ def main():
         elif not ai.scared:
             field = get_field()
         print(field)
+        ai.manual_speed_set()
         if expected_rwd != ai.get_score(field[3:], verbose=True)[0]:
             print('\nit was a misclick\n')
         placement = ai.choose_action(field, piece_idx, can_hold_flag)

@@ -5,6 +5,7 @@ from copy import deepcopy
 import time
 from figures import piece_weight, find_figure
 from digit import get_field
+import keyboard
 
 FIELD_SIZE = [20, 10]
 
@@ -204,8 +205,7 @@ class AI:
 
         return result
 
-    @classmethod
-    def place_piece(cls, piece, rotation, x_pos, height, rot_now=0, x_pos_now=3, depth=0):
+    def place_piece(self, piece, rotation, x_pos, height, rot_now=0, x_pos_now=3, depth=0):
         if depth == 2:
             print('depth 2 reached')
             return
@@ -223,13 +223,15 @@ class AI:
                 click_key(mv_left)
 
         time.sleep(0.07)
+        if time.time() - self.start_time < 300:
+            time.sleep(0.02)
         field = get_field()
         actual_pos = find_figure(field, piece, x_pos, max(0, 16 - height))
         if not actual_pos:
             print('piece not found')
         elif [rotation, x_pos] not in actual_pos:
             print(f'misclick spotted, position {actual_pos[0]}, should be {rotation, x_pos}')
-            cls.place_piece(piece, rotation, x_pos, height, rot_now=actual_pos[0][0], x_pos_now=actual_pos[0][1], depth=depth+1)
+            self.place_piece(piece, rotation, x_pos, height, rot_now=actual_pos[0][0], x_pos_now=actual_pos[0][1], depth=depth+1)
         else:
             print('all good')
 
@@ -244,3 +246,18 @@ class AI:
             press_key(mv_down)
             time.sleep(max(0., 0.5 - (time.time() - self.start_time) / 1000))
             release_key(mv_down)
+
+    def manual_speed_set(self):
+        """
+        set speed modes:
+        1 - for the slowest level, placing pieces fast
+        2 - medium speed, no placing, turn on at level 6
+        3 - for the late game, always scared
+        :return:
+        """
+        if keyboard.is_pressed('1'):
+            self.start_time = time.time()
+        elif keyboard.is_pressed('2'):
+            self.start_time = time.time() - 160
+        elif keyboard.is_pressed('3'):
+            self.start_time = time.time() - 300
