@@ -112,7 +112,7 @@ class AI:
         return cnt_hole
 
     def update_state(self, field):
-        roofs = self.find_roofs(field[3:].tolist())
+        roofs = self.find_roofs(field)
         if roofs[1] >= 14 or time.time() - self.start_time > 300:
             self.scared = True
             print('scared')
@@ -135,9 +135,9 @@ class AI:
         expect_tetris = False
         score = 0
         clear = self.clear_line(field)
-        field = clear[0]
-        roofs = self.find_roofs(field)
-        score += self.almost_full_line(field)
+        cleared = clear[0]
+        roofs = self.find_roofs(cleared)
+        score += self.almost_full_line(cleared)
         if clear[1] >= 4:
             score += 1000
             expect_tetris = True
@@ -161,10 +161,11 @@ class AI:
         if roofs[2][9] != 0:
             score -= 10  # the most right column should be empty
             score -= roofs[2][9]
-        pit_height = self.find_pit(field, roofs[2])
+        pit_height = self.find_pit(cleared, roofs[2])
         # score += 5 * pit_height
         if verbose:
-            print(clear[1])
+            print(cleared)
+            print('lines cleared', clear[1])
             print(roofs)
             print('holes', self.find_hole(roofs[2]))
             print('pit', pit_height)
@@ -178,11 +179,11 @@ class AI:
         :param piece_idx:
         :return: Position
         """
-        results = all_landings(field[3:], piece_idx)
+        results = all_landings(field, piece_idx)
         for i in range(len(results)):
-            results[i].score, results[i].expect_tetris = self.get_score(deepcopy(results[i].field))
+            results[i].score, results[i].expect_tetris = self.get_score(results[i].field)
         results.sort(key=lambda x: x.score, reverse=True)
-        return results[0]
+        return results
 
     def choose_action(self, field, piece_idx, can_hold):
         """
@@ -193,16 +194,34 @@ class AI:
         :return: Position
         """
         self.update_state(field)
-        # print(self.find_pit(field[3:].tolist(), self.find_roofs(field[3:].tolist())[2]))
-
-        result = self.calc_best(field, piece_idx)
-        result_held = self.calc_best(field, self.held_piece)
+        result = self.calc_best(field, piece_idx)[0]
+        result_held = self.calc_best(field, self.held_piece)[0]
         if (result_held.score + piece_weight(self.held_piece)) > (result.score + piece_weight(piece_idx)) \
                 and can_hold:
             self.hold_piece(piece_idx)
             return result_held
 
         return result
+
+    def choose_action_depth2(self, field, piece_idx, next_piece, can_hold):
+        self.update_state(field)
+        results = self.calc_best(field, piece_idx)[:self.choices_for_2nd]
+        for i in range(len(results)):
+            results[i].field = self.clear_line(results[i].field)[0]
+            sub_score = self.calc_best(results[i].field, next_piece)[0].score
+            sub_score_hold = self.calc_best(results[i].field, self.held_piece)[0].score
+            results[i].next_score = max(sub_score, sub_score_hold)
+        if can_hold:
+            results += self.calc_best(field, self.held_piece)[:self.choices_for_2nd]
+            for i in range(self.choices_for_2nd, len(results)):
+                results[i].field = self.clear_line(results[i].field)[0]
+                sub_score = self.calc_best(results[i].field, next_piece)[0].score
+                sub_score_hold = self.calc_best(results[i].field, piece_idx)[0].score
+                results[i].next_score = max(sub_score, sub_score_hold)
+        results.sort(key=lambda x: x.next_score + 100 * x.expect_tetris, reverse=True)
+        if results[0].piece == self.held_piece:
+            self.hold_piece(piece_idx)
+        return results[0]
 
     @classmethod
     def place_piece(cls, piece, rotation, x_pos, height, rot_now=0, x_pos_now=3, depth=0):
@@ -223,7 +242,7 @@ class AI:
                 click_key(mv_left)
 
         time.sleep(0.07)
-        field = get_field()
+        field = get_field()[0]
         actual_pos = find_figure(field, piece, x_pos, max(0, 16 - height))
         if not actual_pos:
             print('piece not found')

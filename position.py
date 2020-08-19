@@ -9,6 +9,8 @@ class Position:
         self.piece = piece
         self.score = score
         self.expect_tetris = expect_tetris
+        self.next_position = None
+        self.next_score = 0
 
     def __call__(self):
         return self.field, self.rotation, self.x_pos, self.piece, self.score, self.expect_tetris

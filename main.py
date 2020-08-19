@@ -15,7 +15,7 @@ def main():
     expected_rwd = 0
     ai = AI(PLAY_SAFE)
     while True:
-        field = get_field()
+        field, next_piece = get_field()
         piece_idx = type_figure_ext(field[:5])
         if piece_idx is None:
             continue
@@ -30,12 +30,13 @@ def main():
             field = np.concatenate((field, ai.clear_line(placement.field)[0]))
             time.sleep(0.2)
         elif not ai.scared:
-            field = get_field()
-        print(field)
-        if expected_rwd != ai.get_score(field[3:], verbose=True)[0]:
+            field, next_piece = get_field()
+        if expected_rwd != ai.get_score(field[3:])[0]:
             print('\nit was a misclick\n')
-        placement = ai.choose_action(field, piece_idx, can_hold_flag)
+        print(field)
+        placement = ai.choose_action_depth2(field[3:], piece_idx, next_piece, can_hold_flag)
         print(f'chosen placement for figure {placement.piece}, ({placement.rotation}, {placement.x_pos}) with score {placement.score}')
+        print(f'next figure {next_piece} should give {placement.next_score}')
         if placement.expect_tetris:
             print('expecting TETRIS')
         expected_rwd = placement.score

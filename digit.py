@@ -74,7 +74,7 @@ def get_field():
         field = field0 * field1 * field2 + field_white
         field = 1 - field
         # pD((img, field_old, field))
-        a, b, c = get_next_3(img)
+        next1, next2, next3 = get_next_3(img)
         # print(a, b, c)
 
         sizeCell = field.shape[0] // 20
@@ -85,5 +85,5 @@ def get_field():
 
         kek = np.array(arr / iters + 0.5, int)
         # pD((kek, field, field_old, img))
-        return kek
+        return kek, next1
 
