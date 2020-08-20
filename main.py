@@ -34,12 +34,14 @@ def main():
         if expected_rwd != ai.get_score(field[3:])[0]:
             print('\nit was a misclick\n')
         print(field)
+        lol = time.time()
         placement = ai.choose_action_depth2(field[3:], piece_idx, next_piece, can_hold_flag)
+        print('calculation took', time.time() - lol)
         print(f'chosen placement for figure {placement.piece}, ({placement.rotation}, {placement.x_pos}) with score {placement.score}')
         print(f'next figure {next_piece} should give {placement.next_score}')
         if placement.expect_tetris:
             print('expecting TETRIS')
-        expected_rwd = placement.score
+        expected_rwd = ai.get_score(ai.clear_line(placement.field)[0])[0]
         ai.place_piece(placement.piece, placement.rotation, placement.x_pos, ai.find_roofs(placement.field)[1])
         ai.place_piece_delay()
         can_hold_flag = True

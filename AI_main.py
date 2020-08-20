@@ -16,7 +16,7 @@ class AI:
         self.held_piece = -1
         self.focus_blank = False
         self.scared = False
-        self.choices_for_2nd = 5
+        self.choices_for_2nd = 3
 
     def hold_piece(self, piece_idx):
         click_key(hold)
@@ -150,11 +150,12 @@ class AI:
 
         score -= roofs[0] * 10  # blank spaces
         score -= roofs[3] * 2
-        score -= roofs[1] ** 1.4
+        if roofs[1] > 7:
+            score -= roofs[1] ** 1.4
         score -= self.find_hole(roofs[2]) * 10
         if self.focus_blank:
             score -= roofs[3] * 3
-            score += 3 * clear[1]
+            score += 5 * clear[1]
             return score, expect_tetris
 
         score -= 3 * clear[1]
@@ -218,8 +219,8 @@ class AI:
                 sub_score = self.calc_best(results[i].field, next_piece)[0].score
                 sub_score_hold = self.calc_best(results[i].field, piece_idx)[0].score
                 results[i].next_score = max(sub_score, sub_score_hold)
-        results.sort(key=lambda x: x.next_score + 100 * x.expect_tetris, reverse=True)
-        if results[0].piece == self.held_piece:
+        results.sort(key=lambda x: x.next_score + x.score + 1000 * x.expect_tetris, reverse=True)
+        if results[0].piece == self.held_piece and self.held_piece != piece_idx:
             self.hold_piece(piece_idx)
         return results[0]
 

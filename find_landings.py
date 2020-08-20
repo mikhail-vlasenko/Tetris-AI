@@ -43,5 +43,5 @@ def all_landings(field, piece_index):
         for x_pos in range(-3, 10):
             res = land(field, pieces[piece_index][rotation], [0, x_pos], piece_index)
             if res is not None:
-                results.append(Position(AI_main.AI.clear_line(res)[0], rotation, x_pos, piece_index))
+                results.append(Position(res, rotation, x_pos, piece_index))
     return results
