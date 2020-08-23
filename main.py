@@ -1,10 +1,8 @@
 import time
-from copy import deepcopy
 from digit import get_field
 from figures import type_figure_ext
 from AI_main import AI
 import numpy as np
-import cProfile
 
 
 PLAY_SAFE = False

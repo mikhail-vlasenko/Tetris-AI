@@ -1,0 +1,4 @@
+numpy~=1.17.4
+matplotlib~=3.3.0
+mss~=6.0.0
+keyboard~=0.13.5

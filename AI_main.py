@@ -1,7 +1,6 @@
 from find_landings import all_landings
 import numpy as np
 from direct_keys import *
-from copy import deepcopy
 import time
 from figures import piece_weight, find_figure
 from digit import get_field
@@ -226,8 +225,8 @@ class AI:
         return results[0]
 
     def place_piece(self, piece, rotation, x_pos, height, rot_now=0, x_pos_now=3, depth=0):
-        if depth == 2:
-            print('depth 2 reached')
+        if depth == 3:
+            print('depth 3 reached')
             return
         rotate = (rotation - rot_now) % 4
         if rotate < 3:
