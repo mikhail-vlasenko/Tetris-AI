@@ -3,7 +3,7 @@ import numpy as np
 from direct_keys import *
 import time
 from figures import piece_weight, find_figure
-from digit import get_field
+from scan_field import get_field
 import keyboard
 
 FIELD_SIZE = [20, 10]

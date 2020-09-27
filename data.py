@@ -34,6 +34,8 @@ class Consts:
         next3 = n3xt[150:195]
         return next1, next2, next3
 
+
 misha = Consts(370, 970, 155, 455, 340, 540, 485, 560)
 alex = Consts(339, 895, 142, 422, 315, 505, 450, 475)
+alex_notebook = Consts(225, 888, 115, 441, 315, 505, 450, 475)
 maxx = Consts(370, 970, 155, 455, 340, 540, 485, 560)
