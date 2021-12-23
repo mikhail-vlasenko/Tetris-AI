@@ -3,7 +3,7 @@ import numpy as np
 from mss import mss
 import data
 
-consts = data.alex_notebook  # CUSTOM
+consts = data.tertio_default  # CUSTOM
 debug_status = 0
 
 d = dict()
@@ -45,7 +45,7 @@ def get_figure(next_figure):
 
 
 def get_field():
-    monitor = {"left": 0, "top": 0, "width": 550, "height": 1000}
+    monitor = {"left": 0, "top": 0, "width": 2560, "height": 1440}
     with mss() as sct:
         img = np.array(sct.grab(monitor))
         field = consts.get_field_from_screen(img)
