@@ -6,7 +6,7 @@ from direct_keys import *
 import time
 from figures import piece_weight, find_figure
 from scan_field import get_field
-from config import CONFIG
+from config import CONFIG, name_piece
 import keyboard
 
 from src.position import Position
@@ -23,7 +23,7 @@ class AI:
 
     def hold_piece(self, piece_idx):
         click_key(hold)
-        print(f'piece {piece_idx} held, {self.held_piece} released')
+        print(f'{name_piece(piece_idx)} held, {name_piece(self.held_piece)} released')
         piece_idx, self.held_piece = self.held_piece, piece_idx
         return piece_idx
 
@@ -259,6 +259,7 @@ class AI:
     def place_piece_delay(self, no_waiting=False):
         if no_waiting:
             click_key(place_k)
+            time.sleep(0.05)  # just a little waiting for the piece to land fully
             return
         if time.time() - self.start_time < 160 and not self.scared and not self.play_safe:
             if time.time() - self.start_time < 120:

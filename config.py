@@ -4,6 +4,11 @@ from src.data import Consts
 
 PIECE_NAMES = ['line', 'square', 'T(flip)', '|__', '__|', '-|_', '_|-']
 
+
+def name_piece(piece: int) -> str:
+    return PIECE_NAMES[piece]
+
+
 # in BGR
 original_colors = [(0, 0, 0) for _ in range(7)]
 original_colors[0] = (230, 228, 180)

@@ -1,6 +1,6 @@
 import time
 
-from config import CONFIG
+from config import CONFIG, name_piece
 from scan_field import get_field
 from src.figures import type_figure_ext
 from src.AI_main import AI
@@ -30,17 +30,20 @@ def main():
         elif not ai.scared:
             field, next_piece = get_field()
         ai.manual_speed_set()
-        if expected_rwd != ai.get_score(field[3:])[0]:
+        actual_score = ai.get_score(field[3:])[0]
+        if expected_rwd != actual_score:
             print('\nit was a misclick\n')
         print(field)
+        print(f'current score {actual_score}')
         if next_piece == -1:
             print("unknown next")
             next_piece = 1
         calc_start_time = time.time()
         placement = ai.choose_action_depth2(field[3:], piece_idx, next_piece, can_hold_flag)
         print('calculation took', time.time() - calc_start_time)
-        print(f'chosen placement for figure {placement.piece}, ({placement.rotation}, {placement.x_pos}) with score {placement.score}')
-        print(f'next figure {next_piece} should give {placement.next_score}')
+        print(f'chosen placement for {name_piece(placement.piece)}: '
+              f'({placement.rotation}, {placement.x_pos}) with score {placement.score}')
+        print(f'next figure {name_piece(next_piece)} should give {placement.next_score}')
         if placement.expect_tetris:
             print('expecting TETRIS')
         expected_rwd = ai.get_score(ai.clear_line(placement.field)[0])[0]
