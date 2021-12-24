@@ -15,6 +15,31 @@ def print_image(arr, figure_size=10):
             plt.imshow(arr[i])
 
 
+def simplified(pixels: np.array) -> np.array:
+    """
+    create a 2d array with 1 on position of a piece pixel and 0 on empty pixel
+    :param pixels: pixels from screen in BGR
+    :return: field of shape (pixels.shape[0], pixels.shape[1]) with 1 if this pixel has a piece
+    """
+    field0 = np.array(pixels[:, :, 0] < 130, int)  # blue
+    field1 = np.array(pixels[:, :, 1] < 100, int)  # green
+    field2 = np.array(pixels[:, :, 2] < 90, int)  # red
+    # these are too dark on all colors to be a piece
+    dark_pixels = field0 * field1 * field2
+
+    field_white0 = np.array(pixels[:, :, 0] > 200, int)
+    field_white1 = np.array(pixels[:, :, 1] > 200, int)
+    field_white2 = np.array(pixels[:, :, 2] > 200, int)
+    # these are too bright on all colors to be a piece
+    white_pixels = field_white0 * field_white1 * field_white2
+
+    # combine dark and bright to get all pixels that are NOT a tetris piece
+    excluded_pixels = dark_pixels + white_pixels
+    # make 1 where piece and 0 where empty
+    field = 1 - excluded_pixels
+    return field
+
+
 def cmp_pixel(p1, p2):
     return abs(p1[0] - p2[0]) + abs(p1[1] - p2[1]) + abs(p1[2] - p2[2])
 
@@ -44,7 +69,7 @@ def get_field() -> (np.array, int):
     monitor = {"left": 0, "top": 0, "width": CONFIG['screen width'], "height": CONFIG['screen height']}
     with mss() as sct:
         img = np.array(sct.grab(monitor))
-        pixels = consts.get_field_from_screen(img)
+        pixels = simplified(consts.get_field_from_screen(img))
 
         next_piece = get_figure_by_color(consts.get_next(img))
         # all empty initially
