@@ -241,6 +241,7 @@ class AI:
             else:
                 click_key(mv_left)
 
+        # verify piece is placed where it should be
         time.sleep(0.09)
         field = get_field()[0]
         actual_pos = find_figure(field, piece, x_pos, max(0, 16 - height))
@@ -252,7 +253,10 @@ class AI:
         else:
             print('all good')
 
-    def place_piece_delay(self):
+    def place_piece_delay(self, no_waiting=False):
+        if no_waiting:
+            click_key(place_k)
+            return
         if time.time() - self.start_time < 160 and not self.scared and not self.play_safe:
             if time.time() - self.start_time < 120:
                 click_key(mv_down)
