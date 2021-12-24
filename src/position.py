@@ -2,7 +2,7 @@ import numpy as np
 
 
 class Position:
-    def __init__(self, field: np.ndarray, rotation, x_pos, piece, score=0, expect_tetris=False):
+    def __init__(self, field: np.ndarray, rotation: int, x_pos: int, piece: int, score=0, expect_tetris=False):
         self.field = field
         self.rotation = rotation
         self.x_pos = x_pos

@@ -1,4 +1,8 @@
 from copy import deepcopy
+from typing import List
+
+import numpy as np
+
 from position import Position
 from figures import array_of_figures as pieces
 
@@ -16,7 +20,7 @@ def check_collision(field, piece, piece_pos, piece_idx):
     return False
 
 
-def land(field, piece, pos_now, piece_idx):
+def land(field: np.array, piece: np.array, pos_now: List[int], piece_idx: int) -> np.array:
     res = deepcopy(field)
     while not check_collision(res, piece, pos_now, piece_idx):
         pos_now[0] += 1
@@ -30,7 +34,7 @@ def land(field, piece, pos_now, piece_idx):
     return res
 
 
-def all_landings(field, piece_index):
+def all_landings(field: np.array, piece_index: int) -> List[Position]:
     """
     calculates all possible results
     :param field:

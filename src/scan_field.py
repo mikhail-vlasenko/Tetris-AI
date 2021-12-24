@@ -1,7 +1,6 @@
 import matplotlib.pyplot as plt
 import numpy as np
 from mss import mss
-import data
 from config import CONFIG
 
 consts = CONFIG['consts']
@@ -14,8 +13,6 @@ def print_image(arr, figure_size=10):
         for i in range(n):
             fig.add_subplot(1, n, i + 1)
             plt.imshow(arr[i])
-    else:
-        pass
 
 
 def cmp_pixel(p1, p2):
@@ -39,27 +36,7 @@ def get_figure_by_color(screen):
     return -1
 
 
-def get_field_deprecated():
-    monitor = {"left": 0, "top": 0, "width": 2560, "height": 1440}
-    with mss() as sct:
-        img = np.array(sct.grab(monitor))
-        field = consts.get_field_from_screen(img)
-
-        next_piece = get_figure_by_color(consts.get_next(img))
-
-        size_cell = field.shape[0] // 20
-        arr = np.zeros((20, 10))
-        for i in range(size_cell):
-            r1 = np.array(np.linspace(0, field.shape[0], 21)[:-1], int) + i
-            r2 = np.array(np.linspace(0, field.shape[1], 11)[:-1], int) + i
-            arr += field[r1][:, r2]
-
-        kek = np.array(arr / size_cell + 0.5, int)
-        print_image((img, field, kek))
-        return kek, next_piece
-
-
-def get_field():
+def get_field() -> (np.array, int):
     """
     takes a screenshot and computes playing grid
     :return: field grid, next piece id

@@ -11,6 +11,7 @@ def main():
     can_hold_flag = True
     expected_rwd = 0
     ai = AI(CONFIG['play safe'])
+    placement = None
     while True:
         field, next_piece = get_field()
         piece_idx = type_figure_ext(field[:5])
@@ -21,7 +22,7 @@ def main():
             can_hold_flag = False
             time.sleep(0.2)
             continue
-        if 'placement' in locals() and placement.expect_tetris:
+        if placement is not None and placement.expect_tetris:
             # hoping that it was not a misclick, not taking a screenshot because TETRIS blocks the view
             field = np.zeros((3, 10), dtype=np.int)
             field = np.concatenate((field, ai.clear_line(placement.field)[0]))

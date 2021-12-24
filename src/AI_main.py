@@ -1,3 +1,5 @@
+from typing import List
+
 from find_landings import all_landings
 import numpy as np
 from direct_keys import *
@@ -6,6 +8,8 @@ from figures import piece_weight, find_figure
 from scan_field import get_field
 from config import CONFIG
 import keyboard
+
+from src.position import Position
 
 
 class AI:
@@ -172,12 +176,12 @@ class AI:
             print('score', score)
         return score, expect_tetris
 
-    def calc_best(self, field, piece_idx):
+    def calc_best(self, field: np.array, piece_idx: int) -> List[Position]:
         """
         chooses the best landing for a piece
         :param field:
         :param piece_idx:
-        :return: Position
+        :return: sorted positions
         """
         results = all_landings(field, piece_idx)
         for i in range(len(results)):
@@ -185,7 +189,7 @@ class AI:
         results.sort(key=lambda x: x.score, reverse=True)
         return results
 
-    def choose_action(self, field, piece_idx, can_hold):
+    def choose_action(self, field: np.array, piece_idx, can_hold) -> Position:
         """
         finds the best action to take in the situation
         :param field:
@@ -203,7 +207,7 @@ class AI:
 
         return result
 
-    def choose_action_depth2(self, field, piece_idx, next_piece, can_hold):
+    def choose_action_depth2(self, field: np.array, piece_idx: int, next_piece: int, can_hold: bool) -> Position:
         self.update_state(field)
         results = self.calc_best(field, piece_idx)[:self.choices_for_2nd]
         for i in range(len(results)):
@@ -223,7 +227,7 @@ class AI:
             self.hold_piece(piece_idx)
         return results[0]
 
-    def place_piece(self, piece, rotation, x_pos, height, rot_now=0, x_pos_now=3, depth=0):
+    def place_piece(self, piece: int, rotation: int, x_pos: int, height: int, rot_now=0, x_pos_now=3, depth=0):
         if depth == 3:
             print('depth 3 reached')
             return
