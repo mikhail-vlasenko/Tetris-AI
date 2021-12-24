@@ -16,6 +16,8 @@ class AI:
     def __init__(self, play_safe):
         self.play_safe = play_safe
         self.start_time = time.time()
+        self.speed = 1
+        self.clearing = False
         self.held_piece = -1
         self.focus_blank = False
         self.scared = False
@@ -117,7 +119,7 @@ class AI:
 
     def update_state(self, field):
         roofs = self.find_roofs(field)
-        if roofs[1] >= 14 or time.time() - self.start_time > 300:
+        if roofs[1] >= 13 or self.speed == 3:
             self.scared = True
             if CONFIG['debug status'] >= 1:
                 print('scared')
@@ -147,7 +149,7 @@ class AI:
         if clear[1] >= 4:
             score += 1000
             expect_tetris = True
-        if self.scared:
+        if self.scared or self.clearing:
             score += 10 * clear[1]
             score -= roofs[0] * 3  # blank spaces
             score -= roofs[3]
@@ -200,24 +202,40 @@ class AI:
         :param can_hold: in the beginning it can't hold because it already held on this turn
         :return: Position
         """
+        # set inner flags for reward function
         self.update_state(field)
+
+        # compute best placement for current piece
         result = self.calc_best(field, piece_idx)[0]
-        result_held = self.calc_best(field, self.held_piece)[0]
-        if (result_held.score + piece_weight(self.held_piece)) > (result.score + piece_weight(piece_idx)) \
-                and can_hold:
-            self.hold_piece(piece_idx)
-            return result_held
+        if can_hold:
+            # for held
+            result_held = self.calc_best(field, self.held_piece)[0]
+            if (result_held.score + piece_weight(self.held_piece)) > \
+                    (result.score + piece_weight(piece_idx)):
+                self.hold_piece(piece_idx)
+                return result_held
 
         return result
 
     def choose_action_depth2(self, field: np.array, piece_idx: int, next_piece: int, can_hold: bool) -> Position:
+        if self.choices_for_2nd == 1:
+            # can simplify
+            return self.choose_action(field, piece_idx, can_hold)
+
         self.update_state(field)
+
+        # top x best placements
         results = self.calc_best(field, piece_idx)[:self.choices_for_2nd]
+        # for each of them find best next placement
         for i in range(len(results)):
+            # clear full lines
             results[i].field = self.clear_line(results[i].field)[0]
+            # compute best scores
             sub_score = self.calc_best(results[i].field, next_piece)[0].score
             sub_score_hold = self.calc_best(results[i].field, self.held_piece)[0].score
+            # take best
             results[i].next_score = max(sub_score, sub_score_hold)
+        # same for held piece
         if can_hold:
             results += self.calc_best(field, self.held_piece)[:self.choices_for_2nd]
             for i in range(self.choices_for_2nd, len(results)):
@@ -225,6 +243,9 @@ class AI:
                 sub_score = self.calc_best(results[i].field, next_piece)[0].score
                 sub_score_hold = self.calc_best(results[i].field, piece_idx)[0].score
                 results[i].next_score = max(sub_score, sub_score_hold)
+
+        # sort by total score, prioritizing tetris on current turn
+        # (not another move, and then tetris)
         results.sort(key=lambda x: x.next_score + x.score + 1000 * x.expect_tetris, reverse=True)
         if results[0].piece == self.held_piece and self.held_piece != piece_idx:
             self.hold_piece(piece_idx)
@@ -263,27 +284,35 @@ class AI:
             if CONFIG['debug status'] >= 1:
                 print('all good')
 
-    def place_piece_delay(self, no_waiting=False):
-        if no_waiting:
-            click_key(place_k)
-            time.sleep(0.05)  # just a little waiting for the piece to land fully
-            return
-        if time.time() - self.start_time < 160 and not self.scared and not self.play_safe:
-            if time.time() - self.start_time < 120:
-                click_key(mv_down)
-            click_key(mv_down)
-            click_key(place_k)
-            time.sleep(0.45)
-        elif time.time() - self.start_time < 300:
-            press_key(mv_down)
-            time.sleep(max(0., 0.5 - (time.time() - self.start_time) / 1000))
-            release_key(mv_down)
+    def place_piece_delay(self):
+        if CONFIG['game'] == 'tetr.io':
+            if not self.scared and self.speed == 1:
+                click_key(place_k)
+                time.sleep(0.05)  # just a little waiting for the piece to land fully
+            elif not self.scared and self.speed == 2:
+                press_key(mv_down)
+                time.sleep(0.3)
+                release_key(mv_down)
 
-    def manual_speed_set(self):
+        elif CONFIG['game'] == 'original':
+            if time.time() - self.start_time < 160 and not self.scared and not self.play_safe:
+                if time.time() - self.start_time < 120:
+                    click_key(mv_down)
+                click_key(mv_down)
+                click_key(place_k)
+                time.sleep(0.45)
+            elif time.time() - self.start_time < 300:
+                press_key(mv_down)
+                time.sleep(max(0., 0.5 - (time.time() - self.start_time) / 1000))
+                release_key(mv_down)
+        else:
+            click_key(place_k)
+
+    def runtime_tuning(self):
         """
         set speed modes:
         1 - for the slowest level, placing pieces fast
-        2 - medium speed, no placing, turn on at level 6
+        2 - medium speed, no hard placing, turn on at level 6
         3 - for the late game, always scared
         control number of paths for the next piece:
         z, x, c - 1, 3, 5
@@ -293,13 +322,22 @@ class AI:
         """
         if keyboard.is_pressed('1'):
             self.start_time = time.time()
+            self.speed = 1
         elif keyboard.is_pressed('2'):
             self.start_time = time.time() - 160
+            self.speed = 2
         elif keyboard.is_pressed('3'):
             self.start_time = time.time() - 300
-        elif keyboard.is_pressed('z'):
+            self.speed = 3
+
+        if keyboard.is_pressed('z'):
             self.choices_for_2nd = 1
         elif keyboard.is_pressed('x'):
             self.choices_for_2nd = 3
         elif keyboard.is_pressed('c'):
             self.choices_for_2nd = 5
+
+        if keyboard.is_pressed('n'):
+            self.clearing = True
+        elif keyboard.is_pressed('m'):
+            self.clearing = False

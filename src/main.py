@@ -43,7 +43,7 @@ def main():
                 field, next_piece = get_field()
 
         # check held keys for runtime AI tuning
-        ai.manual_speed_set()
+        ai.runtime_tuning()
 
         # check if the result is expected
         actual_score = ai.get_score(field[3:])[0]
@@ -75,7 +75,8 @@ def main():
         # emulate key presses to place the piece
         ai.place_piece(placement.piece, placement.rotation, placement.x_pos, ai.find_roofs(placement.field)[1])
         # wait for everything to settle down
-        ai.place_piece_delay(no_waiting=True)
+        ai.place_piece_delay()
+
         can_hold_flag = True
         if CONFIG['debug status'] >= 1:
             print()
