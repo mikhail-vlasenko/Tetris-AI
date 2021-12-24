@@ -1,6 +1,8 @@
 import ctypes
 import time
 
+from config import CONFIG
+
 SendInput = ctypes.windll.user32.SendInput
 
 rotate_k = 0x11  # W
@@ -71,6 +73,6 @@ def release_key(hex_code):
 
 def click_key(hex_code):
     press_key(hex_code)
-    time.sleep(0.03)  # it seems there are no misclicks even with this delay
+    time.sleep(CONFIG['key press delay'])
     release_key(hex_code)
-    time.sleep(0.03)
+    time.sleep(CONFIG['key press delay'])

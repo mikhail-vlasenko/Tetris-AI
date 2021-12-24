@@ -1,12 +1,15 @@
+from typing import List
+
 from find_landings import all_landings
 import numpy as np
 from direct_keys import *
 import time
 from figures import piece_weight, find_figure
 from scan_field import get_field
+from config import CONFIG, name_piece
 import keyboard
 
-FIELD_SIZE = [20, 10]
+from src.position import Position
 
 
 class AI:
@@ -20,7 +23,8 @@ class AI:
 
     def hold_piece(self, piece_idx):
         click_key(hold)
-        print(f'piece {piece_idx} held, {self.held_piece} released')
+        if CONFIG['debug status'] >= 1:
+            print(f'{name_piece(piece_idx)} held, {name_piece(self.held_piece)} released')
         piece_idx, self.held_piece = self.held_piece, piece_idx
         return piece_idx
 
@@ -34,10 +38,10 @@ class AI:
         full_cnt = 0
         i = 0
         while i < len(field):
-            if np.sum(field[i]) == FIELD_SIZE[1]:
+            if np.sum(field[i]) == CONFIG['playing field size'][1]:
                 full_cnt += 1
                 field = np.delete(field, i, axis=0)
-                field = np.insert(field, 0, np.zeros(FIELD_SIZE[1]), axis=0)
+                field = np.insert(field, 0, np.zeros(CONFIG['playing field size'][1]), axis=0)
             else:
                 i += 1
         return field, full_cnt
@@ -53,7 +57,7 @@ class AI:
         blank_cnt = 0
         blank_depth = 0
         for i in range(len(field)):
-            for j in range(FIELD_SIZE[1]):
+            for j in range(CONFIG['playing field size'][1]):
                 if field[i][j]:
                     if tops[j][0] == 0:
                         tops[j][0] = 17 - i
@@ -115,12 +119,14 @@ class AI:
         roofs = self.find_roofs(field)
         if roofs[1] >= 14 or time.time() - self.start_time > 300:
             self.scared = True
-            print('scared')
+            if CONFIG['debug status'] >= 1:
+                print('scared')
         else:
             self.scared = False
         if roofs[0] > 0:
             self.focus_blank = True
-            print('focusing blank')
+            if CONFIG['debug status'] >= 1:
+                print('focusing blank')
         else:
             self.focus_blank = False
         return roofs
@@ -173,12 +179,12 @@ class AI:
             print('score', score)
         return score, expect_tetris
 
-    def calc_best(self, field, piece_idx):
+    def calc_best(self, field: np.array, piece_idx: int) -> List[Position]:
         """
         chooses the best landing for a piece
         :param field:
         :param piece_idx:
-        :return: Position
+        :return: sorted positions
         """
         results = all_landings(field, piece_idx)
         for i in range(len(results)):
@@ -186,7 +192,7 @@ class AI:
         results.sort(key=lambda x: x.score, reverse=True)
         return results
 
-    def choose_action(self, field, piece_idx, can_hold):
+    def choose_action(self, field: np.array, piece_idx, can_hold) -> Position:
         """
         finds the best action to take in the situation
         :param field:
@@ -204,7 +210,7 @@ class AI:
 
         return result
 
-    def choose_action_depth2(self, field, piece_idx, next_piece, can_hold):
+    def choose_action_depth2(self, field: np.array, piece_idx: int, next_piece: int, can_hold: bool) -> Position:
         self.update_state(field)
         results = self.calc_best(field, piece_idx)[:self.choices_for_2nd]
         for i in range(len(results)):
@@ -224,9 +230,10 @@ class AI:
             self.hold_piece(piece_idx)
         return results[0]
 
-    def place_piece(self, piece, rotation, x_pos, height, rot_now=0, x_pos_now=3, depth=0):
+    def place_piece(self, piece: int, rotation: int, x_pos: int, height: int, rot_now=0, x_pos_now=3, depth=0):
         if depth == 3:
-            print('depth 3 reached')
+            if CONFIG['debug status'] >= 1:
+                print('depth 3 reached in place_piece')
             return
         rotate = (rotation - rot_now) % 4
         if rotate < 3:
@@ -246,16 +253,20 @@ class AI:
         field = get_field()[0]
         actual_pos = find_figure(field, piece, x_pos, max(0, 16 - height))
         if not actual_pos:
-            print('piece not found')
+            if CONFIG['debug status'] >= 1:
+                print('piece not found')
         elif [rotation, x_pos] not in actual_pos:
-            print(f'misclick spotted, position {actual_pos[0]}, should be {rotation, x_pos}')
+            if CONFIG['debug status'] >= 1:
+                print(f'misclick spotted, position {actual_pos[0]}, should be {rotation, x_pos}')
             self.place_piece(piece, rotation, x_pos, height, rot_now=actual_pos[0][0], x_pos_now=actual_pos[0][1], depth=depth+1)
         else:
-            print('all good')
+            if CONFIG['debug status'] >= 1:
+                print('all good')
 
     def place_piece_delay(self, no_waiting=False):
         if no_waiting:
             click_key(place_k)
+            time.sleep(0.05)  # just a little waiting for the piece to land fully
             return
         if time.time() - self.start_time < 160 and not self.scared and not self.play_safe:
             if time.time() - self.start_time < 120:
@@ -276,6 +287,8 @@ class AI:
         3 - for the late game, always scared
         control number of paths for the next piece:
         z, x, c - 1, 3, 5
+
+        This is only checked when a new piece appears so you need to hold the key
         :return:
         """
         if keyboard.is_pressed('1'):
