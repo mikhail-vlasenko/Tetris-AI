@@ -3,7 +3,6 @@ import numpy as np
 from mss import mss
 from config import CONFIG
 
-consts = CONFIG['display consts']
 screen_capture = mss()
 monitor = {"left": 0, "top": 0, "width": CONFIG['screen width'], "height": CONFIG['screen height']}
 
@@ -23,9 +22,13 @@ def simplified(pixels: np.array) -> np.array:
     :param pixels: pixels from screen in BGR
     :return: field of shape (pixels.shape[0], pixels.shape[1]) with 1 if this pixel has a piece
     """
-    field0 = np.array(pixels[:, :, 0] < 130, int)  # blue
-    field1 = np.array(pixels[:, :, 1] < 100, int)  # green
-    field2 = np.array(pixels[:, :, 2] < 90, int)  # red
+    dark_boundary = [130, 100, 90]
+    if CONFIG['tetrio garbage']:
+        # lower dark excluded boundary for garbage
+        dark_boundary = [70, 60, 60]
+    field0 = np.array(pixels[:, :, 0] < dark_boundary[0], int)  # blue
+    field1 = np.array(pixels[:, :, 1] < dark_boundary[1], int)  # green
+    field2 = np.array(pixels[:, :, 2] < dark_boundary[2], int)  # red
     # these are too dark on all colors to be a piece
     dark_pixels = field0 * field1 * field2
 
@@ -69,9 +72,9 @@ def get_field() -> (np.array, int):
     :return: field grid, next piece id
     """
     img = np.array(screen_capture.grab(monitor))
-    pixels = simplified(consts.get_field_from_screen(img))
+    pixels = simplified(CONFIG['display consts'].get_field_from_screen(img))
 
-    next_piece = get_figure_by_color(consts.get_next(img))
+    next_piece = get_figure_by_color(CONFIG['display consts'].get_next(img))
     # all empty initially
     field = np.zeros((20 + CONFIG['extra rows'], 10))
     # find middles of grid cells
@@ -82,7 +85,7 @@ def get_field() -> (np.array, int):
     for i, v in enumerate(vertical_centers):
         for j, h in enumerate(horizontal_centers):
             if pixels[v][h] == 1:
-                # check a nearby pixel to ensure its not a snowflake or a star
-                if pixels[v+5][h+5] == 1:
+                # check a nearby pixels to ensure its not a snowflake or a star
+                if pixels[v+5][h+5] == 1 or pixels[v-5][h-5] == 1:
                     field[i][j] = 1
     return field, next_piece

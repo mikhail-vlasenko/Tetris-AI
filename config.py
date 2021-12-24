@@ -46,15 +46,40 @@ tetrio_default = DisplayConsts(279, 1203, 1046, 1512, 370, 420, 1640, 1710, 180)
 
 
 CONFIG = {
-    'playing field size': [20, 10],
-    'piece colors': tetrio_colors,
+    # ---------- per run ----------
+    'debug status': 1,  # greater is more information, 0 is none
+    'key press delay': 0.02,  # increase if facing misclicks, decrease to go faster
+    'tetrio garbage': True,
+    'starting choices for 2nd': 3,
+    # if true, looks at another frame to check for correct piece placement
+    # reduces speed, improves robustness
+    'confirm placement': True,
+    'play safe': False,  # ai is even more robust
+    'play for survival': False,  # if true, starts in 'cleaning' mode
+    'override delay': False,  # if true, hard places all pieces even when scared
+
+    # ---------- per user ----------
     'display consts': tetrio_default,
-    'extra rows': 2,  # in some Tetrises (tetr.io) pieces spawn above the main field
-    'debug status': 2,  # greater is more information, 0 is none
-    'key press delay': 0.03,  # increase if facing misclicks, decrease to go faster
     'screen width': 2560,
     'screen height': 1440,
-    'play safe': False,  # ai is even more robust
+
+    # ---------- per game ----------
+    'game': 'tetr.io',
+    'playing field size': [20, 10],
+    'piece colors': tetrio_colors,
+    'extra rows': 2,  # in some Tetrises (tetr.io) pieces spawn above the main field
+
+    # ---------- other ----------
     'gave warning': False,
-    'game': 'tetr.io'
 }
+
+
+def configure_fast():
+    CONFIG['starting choices for 2nd'] = 1
+    CONFIG['confirm placement'] = False
+    CONFIG['play for survival'] = True
+    CONFIG['override delay'] = True
+
+
+# call to use the pre-set
+configure_fast()

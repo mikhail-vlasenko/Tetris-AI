@@ -17,11 +17,11 @@ class AI:
         self.play_safe = play_safe
         self.start_time = time.time()
         self.speed = 1
-        self.clearing = False
+        self.clearing = CONFIG['play for survival']
         self.held_piece = -1
         self.focus_blank = False
         self.scared = False
-        self.choices_for_2nd = 3
+        self.choices_for_2nd = CONFIG['starting choices for 2nd']
 
     def hold_piece(self, piece_idx):
         click_key(hold)
@@ -49,7 +49,7 @@ class AI:
         return field, full_cnt
 
     @staticmethod
-    def find_roofs(field):
+    def find_roofs(field: np.array) -> (int, int, np.array, int):
         """
         finds blank squares under landed pieces
         :param field:
@@ -270,23 +270,25 @@ class AI:
                 click_key(mv_left)
 
         # verify piece is placed where it should be
-        time.sleep(0.09)
-        field = get_field()[0]
-        actual_pos = find_figure(field, piece, x_pos, max(0, 16 - height))
-        if not actual_pos:
-            if CONFIG['debug status'] >= 1:
-                print('piece not found')
-        elif [rotation, x_pos] not in actual_pos:
-            if CONFIG['debug status'] >= 1:
-                print(f'misclick spotted, position {actual_pos[0]}, should be {rotation, x_pos}')
-            self.place_piece(piece, rotation, x_pos, height, rot_now=actual_pos[0][0], x_pos_now=actual_pos[0][1], depth=depth+1)
-        else:
-            if CONFIG['debug status'] >= 1:
-                print('all good')
+        if CONFIG['confirm placement']:
+            time.sleep(0.09)
+            field = get_field()[0]
+            actual_pos = find_figure(field, piece, x_pos, max(0, 16 - height))
+            if not actual_pos:
+                if CONFIG['debug status'] >= 1:
+                    print('piece not found')
+            elif [rotation, x_pos] not in actual_pos:
+                if CONFIG['debug status'] >= 1:
+                    print(f'misclick spotted, position {actual_pos[0]}, should be {rotation, x_pos}')
+                self.place_piece(piece, rotation, x_pos, height,
+                                 rot_now=actual_pos[0][0], x_pos_now=actual_pos[0][1], depth=depth+1)
+            else:
+                if CONFIG['debug status'] >= 1:
+                    print('all good')
 
     def place_piece_delay(self):
         if CONFIG['game'] == 'tetr.io':
-            if not self.scared and self.speed == 1:
+            if (CONFIG['override delay'] or not self.scared) and self.speed == 1:
                 click_key(place_k)
                 time.sleep(0.05)  # just a little waiting for the piece to land fully
             elif not self.scared and self.speed == 2:
