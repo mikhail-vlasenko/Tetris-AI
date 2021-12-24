@@ -34,7 +34,7 @@ def main():
             print('\nit was a misclick\n')
         print(field)
         lol = time.time()
-        placement = ai.choose_action(field[3:], piece_idx, next_piece)
+        placement = ai.choose_action(field[3:], piece_idx, can_hold_flag)
         print('calculation took', time.time() - lol)
         print(f'chosen placement for figure {placement.piece}, ({placement.rotation}, {placement.x_pos}) with score {placement.score}')
         print(f'next figure {next_piece} should give {placement.next_score}')

@@ -241,6 +241,7 @@ class AI:
             else:
                 click_key(mv_left)
 
+        # verify piece is placed where it should be
         time.sleep(0.09)
         field = get_field()[0]
         actual_pos = find_figure(field, piece, x_pos, max(0, 16 - height))

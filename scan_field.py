@@ -4,17 +4,18 @@ from mss import mss
 import data
 
 consts = data.tertio_default  # CUSTOM
+extra_rows = 2  # in some Tetrises (tetr.io) pieces spawn above the main field
 debug_status = 0
 
-d = dict()
-d[0] = (230, 228, 180)
-d[1] = (182, 228, 247)
-d[2] = (177, 99, 140)
-d[3] = (228, 177, 148)
-d[4] = (128, 180, 235)
-d[5] = (180, 161, 235)
-d[6] = (171, 240, 177)
-d[7] = (96, 45, 36)
+piece_colors = dict()
+piece_colors[0] = (230, 228, 180)
+piece_colors[1] = (182, 228, 247)
+piece_colors[2] = (177, 99, 140)
+piece_colors[3] = (228, 177, 148)
+piece_colors[4] = (128, 180, 235)
+piece_colors[5] = (180, 161, 235)
+piece_colors[6] = (171, 240, 177)
+piece_colors[7] = (96, 45, 36)
 
 
 def print_image(arr, figure_size=10):
@@ -32,25 +33,30 @@ def cmp_pixel(p1, p2):
     return abs(p1[0] - p2[0]) + abs(p1[1] - p2[1]) + abs(p1[2] - p2[2])
 
 
-def get_figure(next_figure):
-    next_figure = next_figure[15:25, 15:22]
+def get_figure_by_color(next_figure):
+    """
+    finds next piece class based on color
+    shape recognition is difficult because the piece is not aligned with a grid
+    :param next_figure: part of screen with next piece
+    :return: piece class
+    """
     for i in range(len(next_figure)):
         for j in range(len(next_figure[0])):
             p = next_figure[i, j][:3]
             for k in range(7):
-                res = cmp_pixel(d[k], p)
-                if res < 15:
+                distance = cmp_pixel(piece_colors[k], p)
+                if distance < 15:
                     return k
     return -1
 
 
-def get_field():
+def get_field_deprecated():
     monitor = {"left": 0, "top": 0, "width": 2560, "height": 1440}
     with mss() as sct:
         img = np.array(sct.grab(monitor))
         field = consts.get_field_from_screen(img)
 
-        next1, next2, next3 = map(get_figure, consts.get_next_3(img))
+        next_piece = get_figure_by_color(consts.get_next(img))
 
         size_cell = field.shape[0] // 20
         arr = np.zeros((20, 10))
@@ -61,4 +67,28 @@ def get_field():
 
         kek = np.array(arr / size_cell + 0.5, int)
         print_image((img, field, kek))
-        return kek, next1
+        return kek, next_piece
+
+
+def get_field():
+    """
+    takes a screenshot and computes playing grid
+    :return: field grid, next piece id
+    """
+    monitor = {"left": 0, "top": 0, "width": 2560, "height": 1440}
+    with mss() as sct:
+        img = np.array(sct.grab(monitor))
+        pixels = consts.get_field_from_screen(img)
+
+        next_piece = get_figure_by_color(consts.get_next(img))
+        # all empty initially
+        field = np.zeros((20 + extra_rows, 10))
+        # find middles of grid cells
+        cell_size = pixels.shape[1] // 10
+        vertical_centers = np.array(np.linspace(cell_size // 2, pixels.shape[0] + cell_size // 2, 21 + extra_rows)[:-1], int)
+        horizontal_centers = np.array(np.linspace(cell_size // 2, pixels.shape[1] + cell_size // 2, 11)[:-1], int)
+        # go through all cell centers
+        for i, v in enumerate(vertical_centers):
+            for j, h in enumerate(horizontal_centers):
+                field[i][j] = pixels[v][h]
+        return field, next_piece
