@@ -1,7 +1,7 @@
 import time
 from scan_field import get_field
-from figures import type_figure_ext
-from AI_main import AI
+from src.figures import type_figure_ext
+from src.AI_main import AI
 import numpy as np
 
 
