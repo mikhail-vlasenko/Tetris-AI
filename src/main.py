@@ -1,17 +1,16 @@
 import time
+
+from config import CONFIG
 from scan_field import get_field
 from src.figures import type_figure_ext
 from src.AI_main import AI
 import numpy as np
 
 
-PLAY_SAFE = False
-
-
 def main():
     can_hold_flag = True
     expected_rwd = 0
-    ai = AI(PLAY_SAFE)
+    ai = AI(CONFIG['play safe'])
     while True:
         field, next_piece = get_field()
         piece_idx = type_figure_ext(field[:5])

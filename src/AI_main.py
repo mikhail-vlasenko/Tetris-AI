@@ -4,9 +4,8 @@ from direct_keys import *
 import time
 from figures import piece_weight, find_figure
 from scan_field import get_field
+from config import CONFIG
 import keyboard
-
-FIELD_SIZE = [20, 10]
 
 
 class AI:
@@ -34,10 +33,10 @@ class AI:
         full_cnt = 0
         i = 0
         while i < len(field):
-            if np.sum(field[i]) == FIELD_SIZE[1]:
+            if np.sum(field[i]) == CONFIG['playing field size'][1]:
                 full_cnt += 1
                 field = np.delete(field, i, axis=0)
-                field = np.insert(field, 0, np.zeros(FIELD_SIZE[1]), axis=0)
+                field = np.insert(field, 0, np.zeros(CONFIG['playing field size'][1]), axis=0)
             else:
                 i += 1
         return field, full_cnt
@@ -53,7 +52,7 @@ class AI:
         blank_cnt = 0
         blank_depth = 0
         for i in range(len(field)):
-            for j in range(FIELD_SIZE[1]):
+            for j in range(CONFIG['playing field size'][1]):
                 if field[i][j]:
                     if tops[j][0] == 0:
                         tops[j][0] = 17 - i
