@@ -1,5 +1,7 @@
 import numpy as np
 
+from config import CONFIG
+
 array_of_figures = np.array([
     [
         [[1, 1, 1, 1], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]],
@@ -82,7 +84,8 @@ def piece_weight(figure):
 
 def find_figure(field, piece: int, exp_x_pos, up_to):
     possible = []
-    print(f'looking up to {up_to}')
+    if CONFIG['debug status'] >= 1:
+        print(f'looking up to {up_to}')
     for rot in range(len(array_of_figures[piece])):
         for y_pos in range(up_to):
             for x_pos in range(exp_x_pos-3, exp_x_pos+4):

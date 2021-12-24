@@ -23,7 +23,8 @@ class AI:
 
     def hold_piece(self, piece_idx):
         click_key(hold)
-        print(f'{name_piece(piece_idx)} held, {name_piece(self.held_piece)} released')
+        if CONFIG['debug status'] >= 1:
+            print(f'{name_piece(piece_idx)} held, {name_piece(self.held_piece)} released')
         piece_idx, self.held_piece = self.held_piece, piece_idx
         return piece_idx
 
@@ -118,12 +119,14 @@ class AI:
         roofs = self.find_roofs(field)
         if roofs[1] >= 14 or time.time() - self.start_time > 300:
             self.scared = True
-            print('scared')
+            if CONFIG['debug status'] >= 1:
+                print('scared')
         else:
             self.scared = False
         if roofs[0] > 0:
             self.focus_blank = True
-            print('focusing blank')
+            if CONFIG['debug status'] >= 1:
+                print('focusing blank')
         else:
             self.focus_blank = False
         return roofs
@@ -229,7 +232,8 @@ class AI:
 
     def place_piece(self, piece: int, rotation: int, x_pos: int, height: int, rot_now=0, x_pos_now=3, depth=0):
         if depth == 3:
-            print('depth 3 reached')
+            if CONFIG['debug status'] >= 1:
+                print('depth 3 reached in place_piece')
             return
         rotate = (rotation - rot_now) % 4
         if rotate < 3:
@@ -249,12 +253,15 @@ class AI:
         field = get_field()[0]
         actual_pos = find_figure(field, piece, x_pos, max(0, 16 - height))
         if not actual_pos:
-            print('piece not found')
+            if CONFIG['debug status'] >= 1:
+                print('piece not found')
         elif [rotation, x_pos] not in actual_pos:
-            print(f'misclick spotted, position {actual_pos[0]}, should be {rotation, x_pos}')
+            if CONFIG['debug status'] >= 1:
+                print(f'misclick spotted, position {actual_pos[0]}, should be {rotation, x_pos}')
             self.place_piece(piece, rotation, x_pos, height, rot_now=actual_pos[0][0], x_pos_now=actual_pos[0][1], depth=depth+1)
         else:
-            print('all good')
+            if CONFIG['debug status'] >= 1:
+                print('all good')
 
     def place_piece_delay(self, no_waiting=False):
         if no_waiting:
@@ -280,6 +287,8 @@ class AI:
         3 - for the late game, always scared
         control number of paths for the next piece:
         z, x, c - 1, 3, 5
+
+        This is only checked when a new piece appears so you need to hold the key
         :return:
         """
         if keyboard.is_pressed('1'):

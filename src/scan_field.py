@@ -3,7 +3,7 @@ import numpy as np
 from mss import mss
 from config import CONFIG
 
-consts = CONFIG['consts']
+consts = CONFIG['display consts']
 
 
 def print_image(arr, figure_size=10):
