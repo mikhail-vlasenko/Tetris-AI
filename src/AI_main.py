@@ -318,8 +318,10 @@ class AI:
         3 - for the late game, always scared
         control number of paths for the next piece:
         z, x, c - 1, 3, 5
+        n - try to clean the field
+        m - disable cleaning mode (try to get tetrises)
 
-        This is only checked when a new piece appears so you need to hold the key
+        This is only checked when a new piece appears, so you need to hold the key
         :return:
         """
         if keyboard.is_pressed('1'):

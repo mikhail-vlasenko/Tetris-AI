@@ -1,9 +1,40 @@
 # Tetris-AI
 
-Building a tetris player to win money in an online tetris game
+We built a bot to play online tetris _better than we ever could_, and this bot won a few dollars.
 
-The bot won a few dollars
+The bot works with screen information and emulates key presses,
+thus, it can be adapted to _any_ tetris game.
 
-Gameplay demonstration:
+After reading the screen, it uses an algorithm to determine the best piece placement and executes it.
+
+The algorithm has various modes, for example, focusing on getting a _tetris_,
+which is clearing 4 lines with a single piece.
+
+### Gameplay demonstration
 
 ![demo gif](https://media.giphy.com/media/kg1Ng8ZXTUQ2efOpUk/giphy.gif)
+
+## Usage guide
+
+### How to run
+1. Take a screenshot of your Tetris game
+2. Go to `config.py` and define a `DisplayConsts` instance
+3. Set 'display consts' in `CONFIG` to your instance
+4. If necessary, define a `colors` array with piece colors for recognition of the next piece
+5. Set other config parameters
+6. Run `src/main.py`
+7. Switch to the Tetris window
+
+### Runtime tuning
+You can control how the bot plays while the game is going.
+
+This is only checked when a new piece appears, so you need to hold the key.
+
+    Piece dropping speed
+    1 - the fastest speed, always hard drop
+    2 - no hard drop
+    3 - let the piece land on its own, the bot is always scared
+    Number of computing paths for the next piece:
+    z, x, c - 1, 3, 5
+    n - try to clean the field
+    m - disable cleaning mode (focus on getting tetrises)
