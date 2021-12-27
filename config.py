@@ -75,7 +75,7 @@ CONFIG = {
 
 
 def configure_fast():
-    CONFIG['starting choices for 2nd'] = 1
+    CONFIG['starting choices for 2nd'] = 2
     CONFIG['confirm placement'] = False
     CONFIG['play for survival'] = True
     CONFIG['override delay'] = True

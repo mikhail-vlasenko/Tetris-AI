@@ -77,8 +77,6 @@ class AI:
             if ssum == 9:
                 score += 2
             if ssum == 8:
-                score += 1
-            if ssum == 7:
                 score += 0.5
         return score
 
@@ -133,31 +131,37 @@ class AI:
             self.focus_blank = False
         return roofs
 
-    def get_score(self, field, verbose=False):
+    def get_score(self, field: np.array, verbose=(CONFIG['debug status'] >= 3)) -> (float, bool):
         """
         tells how good a position is
         :param field:
         :param verbose: if True prints debug info
-        :return:
+        :return: score and expect_tetris flag
         """
         expect_tetris = False
         score = 0
+        # compute useful stuff about the position
         clear = self.clear_line(field)
         cleared = clear[0]
         roofs = self.find_roofs(cleared)
         score += self.almost_full_line(cleared)
+        # scoring tetris is very good
         if clear[1] >= 4:
             score += 1000
             expect_tetris = True
+
+        # clearing the field as much as possible
         if self.scared or self.clearing:
             score += 10 * clear[1]
             score -= roofs[0] * 3  # blank spaces
-            score -= roofs[3]
-            score -= 4 * roofs[1]
+            score -= roofs[3] * 2  # cumulative depth of blanks
+            score -= roofs[1] + roofs[1] ** 1.2  # height of highest piece
             return score, expect_tetris
 
         score -= roofs[0] * 10  # blank spaces
         score -= roofs[3] * 2
+
+        # height doesn't matter when its low
         if roofs[1] > 7:
             score -= roofs[1] ** 1.4
         score -= self.find_hole(roofs[2]) * 10
@@ -171,7 +175,6 @@ class AI:
             score -= 10  # the most right column should be empty
             score -= roofs[2][9]
         pit_height = self.find_pit(cleared, roofs[2])
-        # score += 5 * pit_height
         if verbose:
             print(cleared)
             print('lines cleared', clear[1])
