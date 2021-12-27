@@ -1,7 +1,9 @@
-# pieces are encoded as
-# 0 - line, 1 - square, 2 - T(flip), 3 - |__, 4 - __|, 5 - -|_,6 - _|-
+import numpy as np
 from src.display_consts import DisplayConsts
 
+
+# pieces are encoded as
+# 0 - line, 1 - square, 2 - T(flip), 3 - |__, 4 - __|, 5 - -|_,6 - _|-
 PIECE_NAMES = ['line', 'square', 'T(flip)', '|__', '__|', '-|_', '_|-']
 
 
@@ -10,7 +12,7 @@ def name_piece(piece: int) -> str:
 
 
 # in BGR
-original_colors = [(0, 0, 0) for _ in range(7)]
+original_colors = np.zeros((7, 3), np.int)
 original_colors[0] = (230, 228, 180)
 original_colors[1] = (182, 228, 247)
 original_colors[2] = (177, 99, 140)
@@ -20,7 +22,7 @@ original_colors[5] = (180, 161, 235)
 original_colors[6] = (171, 240, 177)
 
 # tetr.io colors in RGB
-tetrio_colors = [(0, 0, 0) for _ in range(7)]
+tetrio_colors = np.zeros((7, 3), np.int)
 tetrio_colors[0] = (36, 214, 150)
 tetrio_colors[1] = (210, 171, 42)
 tetrio_colors[2] = (212, 67, 195)
@@ -50,9 +52,9 @@ CONFIG = {
     'debug status': 1,  # greater is more information, 0 is none
     'key press delay': 0.02,  # increase if facing misclicks, decrease to go faster
     'tetrio garbage': True,
-    'starting choices for 2nd': 3,
+    'starting choices for 2nd': 8,
     # if true, looks at another frame to check for correct piece placement
-    # reduces speed, improves robustness
+    # reduces speed, increases robustness
     'confirm placement': True,
     'play safe': False,  # ai is even more robust
     'play for survival': False,  # if true, starts in 'cleaning' mode
@@ -75,7 +77,7 @@ CONFIG = {
 
 
 def configure_fast():
-    CONFIG['starting choices for 2nd'] = 4
+    CONFIG['starting choices for 2nd'] = 8
     CONFIG['confirm placement'] = False
     CONFIG['play for survival'] = True
     CONFIG['override delay'] = True

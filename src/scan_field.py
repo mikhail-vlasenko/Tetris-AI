@@ -1,10 +1,13 @@
 import matplotlib.pyplot as plt
 import numpy as np
 from mss import mss
+from numba import jit
+
 from config import CONFIG
 
 screen_capture = mss()
 monitor = {"left": 0, "top": 0, "width": CONFIG['screen width'], "height": CONFIG['screen height']}
+piece_colors = CONFIG['piece colors']
 
 
 def print_image(arr, figure_size=10):
@@ -45,11 +48,13 @@ def simplified(pixels: np.array) -> np.array:
     return field
 
 
+@jit(nopython=True)
 def cmp_pixel(p1, p2):
     return abs(p1[0] - p2[0]) + abs(p1[1] - p2[1]) + abs(p1[2] - p2[2])
 
 
-def get_figure_by_color(screen):
+@jit(nopython=True)
+def get_figure_by_color(screen: np.array):
     """
     finds next piece class based on color
     shape recognition is difficult because the piece is not aligned with a grid
@@ -59,8 +64,8 @@ def get_figure_by_color(screen):
     for i in range(len(screen)):
         for j in range(len(screen[0])):
             pixel = screen[i, j][:3]
-            for piece_idx in range(len(CONFIG['piece colors'])):
-                distance = cmp_pixel(CONFIG['piece colors'][piece_idx][::-1], pixel)
+            for piece_idx in range(len(piece_colors)):
+                distance = cmp_pixel(piece_colors[piece_idx][::-1], pixel)
                 if distance < 10:
                     return piece_idx
     return -1

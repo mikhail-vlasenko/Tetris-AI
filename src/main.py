@@ -11,7 +11,12 @@ def main():
     can_hold_flag = True
     expected_rwd = 0
     ai = AI()
-    placement = None
+    position = None
+
+    # call jit-compiling functions to compile them
+    ai.calc_best(np.zeros((20, 10), dtype=np.int), 0)
+    field, _ = get_field()
+    print("Compilation complete")
 
     # infinite playing cycle
     while True:
@@ -30,14 +35,14 @@ def main():
         if ai.held_piece == -1:
             ai.hold_piece(piece_idx)
             can_hold_flag = False
-            time.sleep(0.2)
             continue
+
         # shenanigans for better parsing of the original game
         if CONFIG['game'] == 'original':
-            if placement is not None and placement.expect_tetris:
+            if position is not None and position.expect_tetris:
                 # hoping that it was not a misclick, not taking a screenshot because TETRIS blocks the view
                 field = np.zeros((3, 10), dtype=np.int)
-                field = np.concatenate((field, ai.clear_line(placement.field)[0]))
+                field = np.concatenate((field, ai.clear_line(position.field)[0]))
                 time.sleep(0.2)
             elif not ai.scared:
                 field, next_piece = get_field()
@@ -53,6 +58,8 @@ def main():
             if CONFIG['debug status'] >= 2:
                 print(field)
             print(f'current score {actual_score}')
+
+        # next piece is not recognized
         if next_piece == -1:
             if CONFIG['debug status'] >= 1:
                 print("unknown next")
@@ -60,20 +67,20 @@ def main():
 
         calc_start_time = time.time()
         # compute best outcome
-        placement = ai.choose_action_depth2(field[3:], piece_idx, next_piece, can_hold_flag)
+        position = ai.choose_action_depth2(field[3:], piece_idx, next_piece, can_hold_flag)
 
         if CONFIG['debug status'] >= 1:
-            # useful info
+            # print useful info
             print('calculation took', time.time() - calc_start_time)
-            print(f'chosen placement for {name_piece(placement.piece)}: '
-                  f'({placement.rotation}, {placement.x_pos}) with score {placement.score}')
-            print(f'next figure {name_piece(next_piece)} should give {placement.next_score}')
-            if placement.expect_tetris:
+            print(f'chosen placement for {name_piece(position.piece)}: '
+                  f'({position.rotation}, {position.x_pos}) with score {position.score}')
+            print(f'next figure {name_piece(next_piece)} should give {position.next_score}')
+            if position.expect_tetris:
                 print('expecting TETRIS')
 
-        expected_rwd = ai.get_score(ai.clear_line(placement.field)[0])[0]
+        expected_rwd = ai.get_score(ai.clear_line(position.field)[0])[0]
         # emulate key presses to place the piece
-        ai.place_piece(placement.piece, placement.rotation, placement.x_pos, ai.find_roofs(placement.field)[1])
+        ai.place_piece(position.piece, position.rotation, position.x_pos, ai.find_roofs(position.field)[1])
         # wait for everything to settle down
         ai.place_piece_delay()
 
@@ -83,5 +90,5 @@ def main():
 
 
 if __name__ == '__main__':
-    time.sleep(2)
+    time.sleep(1)
     main()

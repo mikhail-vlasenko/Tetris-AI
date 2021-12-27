@@ -1,5 +1,7 @@
 from typing import List
 
+from numba import jit
+
 from find_landings import all_landings
 import numpy as np
 from direct_keys import *
@@ -49,6 +51,7 @@ class AI:
         return field, full_cnt
 
     @staticmethod
+    @jit(nopython=True)
     def find_roofs(field: np.array) -> (int, int, np.array, int):
         """
         finds blank squares under landed pieces
@@ -70,6 +73,7 @@ class AI:
         return blank_cnt, int(np.max(tops[:, 0])), tops[:, 0], blank_depth
 
     @staticmethod
+    @jit(nopython=True)
     def almost_full_line(field):
         score = 0
         for i in range(len(field)):
@@ -81,6 +85,7 @@ class AI:
         return score
 
     @staticmethod
+    @jit(nopython=True)
     def find_pit(field, tops):
         gap_idx = []
         for i in range(len(field)):
@@ -104,6 +109,7 @@ class AI:
         return max_pit_h
 
     @staticmethod
+    @jit(nopython=True)
     def find_hole(tops):
         cnt_hole = 0
         tops = np.insert(tops, 0, 20)
@@ -223,6 +229,14 @@ class AI:
         return result
 
     def choose_action_depth2(self, field: np.array, piece_idx: int, next_piece: int, can_hold: bool) -> Position:
+        """
+        finds best action considering the next piece as well
+        :param field:
+        :param piece_idx:
+        :param next_piece:
+        :param can_hold:
+        :return:
+        """
         if self.choices_for_2nd == 1:
             # can simplify
             return self.choose_action(field, piece_idx, can_hold)
@@ -249,14 +263,18 @@ class AI:
                 sub_score_hold = self.calc_best(results[i].field, piece_idx)[0].score
                 results[i].next_score = max(sub_score, sub_score_hold)
 
-        # sort by total score, prioritizing tetris on current turn
-        # (not another move, and then tetris)
-        results.sort(key=lambda x: x.next_score + x.score + 1000 * x.expect_tetris, reverse=True)
-        if results[0].piece == self.held_piece and self.held_piece != piece_idx:
+        # take best by total score, prioritizing tetris on current turn
+        # (instead of another move, and then tetris)
+        optimal = max(results, key=lambda x: x.next_score + x.score + 1000 * x.expect_tetris)
+        if optimal.piece == self.held_piece and self.held_piece != piece_idx:
             self.hold_piece(piece_idx)
-        return results[0]
+        return optimal
 
     def place_piece(self, piece: int, rotation: int, x_pos: int, height: int, rot_now=0, x_pos_now=3, depth=0):
+        """
+        puts the piece into correct position (before lowering)
+        optionally verifies placement
+        """
         if depth == 3:
             if CONFIG['debug status'] >= 1:
                 print('depth 3 reached in place_piece')
@@ -322,7 +340,7 @@ class AI:
         2 - medium speed, no hard placing, turn on at level 6
         3 - for the late game, always scared
         control number of paths for the next piece:
-        z, x, c - 1, 3, 5
+        z, x, c - 1, 4, 8
         n - try to clean the field
         m - disable cleaning mode (try to get tetrises)
 
@@ -342,9 +360,9 @@ class AI:
         if keyboard.is_pressed('z'):
             self.choices_for_2nd = 1
         elif keyboard.is_pressed('x'):
-            self.choices_for_2nd = 3
+            self.choices_for_2nd = 4
         elif keyboard.is_pressed('c'):
-            self.choices_for_2nd = 5
+            self.choices_for_2nd = 8
 
         if keyboard.is_pressed('n'):
             self.clearing = True

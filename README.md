@@ -35,6 +35,6 @@ This is only checked when a new piece appears, so you need to hold the key.
     2 - no hard drop
     3 - let the piece land on its own, the bot is always scared
     Number of computing paths for the next piece:
-    z, x, c - 1, 3, 5
+    z, x, c - 1, 4, 8
     n - try to clean the field
     m - disable cleaning mode (focus on getting tetrises)
