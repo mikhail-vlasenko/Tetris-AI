@@ -40,10 +40,10 @@ class AI:
         full_cnt = 0
         i = 0
         while i < len(field):
-            if np.sum(field[i]) == CONFIG['playing field size'][1]:
+            if np.sum(field[i]) == len(field[0]):
                 full_cnt += 1
                 field = np.delete(field, i, axis=0)
-                field = np.insert(field, 0, np.zeros(CONFIG['playing field size'][1]), axis=0)
+                field = np.insert(field, 0, np.zeros(len(field[0])), axis=0)
             else:
                 i += 1
         return field, full_cnt
@@ -59,7 +59,7 @@ class AI:
         blank_cnt = 0
         blank_depth = 0
         for i in range(len(field)):
-            for j in range(CONFIG['playing field size'][1]):
+            for j in range(len(field[0])):
                 if field[i][j]:
                     if tops[j][0] == 0:
                         tops[j][0] = 17 - i
@@ -117,6 +117,8 @@ class AI:
 
     def update_state(self, field):
         roofs = self.find_roofs(field)
+        if self.clearing and CONFIG['debug status']:
+            print('clearing')
         if roofs[1] >= 13 or self.speed == 3:
             self.scared = True
             if CONFIG['debug status'] >= 1:
@@ -153,9 +155,9 @@ class AI:
         # clearing the field as much as possible
         if self.scared or self.clearing:
             score += 10 * clear[1]
-            score -= roofs[0] * 3  # blank spaces
-            score -= roofs[3] * 2  # cumulative depth of blanks
-            score -= roofs[1] + roofs[1] ** 1.2  # height of highest piece
+            score -= roofs[0] * 5  # blank spaces
+            score -= roofs[3]  # cumulative depth of blanks
+            score -= roofs[1] + roofs[1] ** 1.3  # height of highest piece
             return score, expect_tetris
 
         score -= roofs[0] * 10  # blank spaces
