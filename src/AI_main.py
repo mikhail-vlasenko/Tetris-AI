@@ -13,8 +13,8 @@ from src.position import Position
 
 
 class AI:
-    def __init__(self, play_safe):
-        self.play_safe = play_safe
+    def __init__(self):
+        self.play_safe = CONFIG['play safe']
         self.start_time = time.time()
         self.speed = 1
         self.clearing = CONFIG['play for survival']

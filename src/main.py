@@ -10,7 +10,7 @@ import numpy as np
 def main():
     can_hold_flag = True
     expected_rwd = 0
-    ai = AI(CONFIG['play safe'])
+    ai = AI()
     placement = None
 
     # infinite playing cycle
