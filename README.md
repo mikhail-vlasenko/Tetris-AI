@@ -11,8 +11,14 @@ The algorithm has various modes, for example, focusing on getting a _tetris_,
 which is clearing 4 lines with a single piece.
 
 ### Gameplay demonstration
+Bot playing in mode 1
 
-![demo gif](https://media.giphy.com/media/kg1Ng8ZXTUQ2efOpUk/giphy.gif)
+![demo mode 1](https://media.giphy.com/media/kg1Ng8ZXTUQ2efOpUk/giphy.gif)
+
+Bot playing in mode 2, in another game
+
+![demo mode 2](https://user-images.githubusercontent.com/27450370/147476623-7acc036e-7195-409b-a2ec-d24e489aadf2.gif)
+
 
 ## Usage guide
 
