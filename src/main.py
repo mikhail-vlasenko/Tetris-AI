@@ -14,7 +14,7 @@ def main():
     position = None
 
     # call jit-compiling functions to compile them
-    ai.calc_best(np.zeros((20, 10), dtype=np.int), 0)
+    ai.calc_best(np.zeros((20, 10), dtype=int), 0)
     field, _ = get_field()
     print("Compilation complete")
 
