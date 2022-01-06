@@ -65,6 +65,7 @@ def get_figure_by_color(screen: np.array):
         for j in range(len(screen[0])):
             pixel = screen[i, j][:3]
             for piece_idx in range(len(piece_colors)):
+                # piece_colors has [::-1] to convert from RGB to BGR because pixel is in BGR
                 distance = cmp_pixel(piece_colors[piece_idx][::-1], pixel)
                 if distance < 10:
                     return piece_idx

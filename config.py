@@ -11,15 +11,15 @@ def name_piece(piece: int) -> str:
     return PIECE_NAMES[piece]
 
 
-# in BGR
+# in RGB
 original_colors = np.zeros((7, 3), np.int)
-original_colors[0] = (230, 228, 180)
-original_colors[1] = (182, 228, 247)
-original_colors[2] = (177, 99, 140)
-original_colors[3] = (228, 177, 148)
-original_colors[4] = (128, 180, 235)
-original_colors[5] = (180, 161, 235)
-original_colors[6] = (171, 240, 177)
+original_colors[0] = (180, 228, 230)
+original_colors[1] = (247, 228, 182)
+original_colors[2] = (140, 99, 177)
+original_colors[3] = (148, 177, 228)
+original_colors[4] = (235, 180, 128)
+original_colors[5] = (235, 161, 180)
+original_colors[6] = (177, 240, 171)
 
 # tetr.io colors in RGB
 tetrio_colors = np.zeros((7, 3), np.int)
