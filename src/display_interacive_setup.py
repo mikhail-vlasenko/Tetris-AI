@@ -16,18 +16,20 @@ class InteractiveSetup:
         self.axes[0].set_title("Raw Field View")
         self.axes[1].set_title("Processed Field View")
         self.axes[2].set_title("Next Piece View")
-        self.buffers = [self.axes[0].imshow(np.zeros((20, 10))),
-                        self.axes[1].imshow(np.zeros((20, 10))),
-                        self.axes[2].imshow(np.zeros((5, 5)))]
+        for ax in self.axes:
+            ax.axis('off')
+        self.buffers = [self.axes[0].imshow(np.zeros((20, 10, 3))),
+                        self.axes[1].imshow(np.zeros((20, 10, 3))),
+                        self.axes[2].imshow(np.zeros((5, 5, 3)))]
 
     def render_frame(self, field, simplified, next_img, next_piece):
-        self.buffers[0].set_array(field.copy())
+        self.buffers[0].set_array(field.copy()[:, :, 2::-1])  # BGRA to RGB
         img_simplified = simplified.copy()
         # displays better when converted to 3 channels
         img_simplified = np.expand_dims(img_simplified, axis=2)
         img_simplified = np.broadcast_to(img_simplified, (img_simplified.shape[0], img_simplified.shape[1], 3))
         self.buffers[1].set_array(img_simplified*255)
-        self.buffers[2].set_array(next_img.copy())
+        self.buffers[2].set_array(next_img.copy()[:, :, 2::-1])
         self.axes[2].set_title(f"Next Piece (detected {next_piece})")
 
         self.fig.canvas.draw()
