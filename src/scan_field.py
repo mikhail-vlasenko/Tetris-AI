@@ -1,22 +1,15 @@
+from typing import Optional
+
 import matplotlib.pyplot as plt
 import numpy as np
 from mss import mss
 from numba import jit
 
 from config import CONFIG
+from src.display_interacive_setup import InteractiveSetup
 
 screen_capture = mss()
-monitor = {"left": 0, "top": 0, "width": CONFIG['screen width'], "height": CONFIG['screen height']}
 piece_colors = CONFIG['piece colors']
-
-
-def print_image(arr, figure_size=10):
-    if CONFIG['debug status'] == 1:
-        n = len(arr)
-        fig = plt.figure(figsize=(figure_size, figure_size))
-        for i in range(n):
-            fig.add_subplot(1, n, i + 1)
-            plt.imshow(arr[i])
 
 
 def simplified(pixels: np.array) -> np.array:
@@ -49,49 +42,64 @@ def simplified(pixels: np.array) -> np.array:
 
 
 @jit(nopython=True)
-def cmp_pixel(p1, p2):
-    return abs(p1[0] - p2[0]) + abs(p1[1] - p2[1]) + abs(p1[2] - p2[2])
+def cmp_pixel(pixels, color):
+    return np.abs(pixels[:, 0] - color[2]) + \
+           np.abs(pixels[:, 1] - color[1]) + \
+           np.abs(pixels[:, 2] - color[0])
 
 
-@jit(nopython=True)
 def get_figure_by_color(screen: np.array):
-    """
-    finds next piece class based on color
-    shape recognition is difficult because the piece is not aligned with a grid
-    :param screen: part of screen with next piece
-    :return: piece class
-    """
-    for i in range(len(screen)):
-        for j in range(len(screen[0])):
-            pixel = screen[i, j][:3]
-            for piece_idx in range(len(piece_colors)):
-                # piece_colors has [::-1] to convert from RGB to BGR because pixel is in BGR
-                distance = cmp_pixel(piece_colors[piece_idx][::-1], pixel)
-                if distance < 10:
-                    return piece_idx
+    pixels = screen[:, :, :3].reshape(-1, 3).astype(int)
+    distances = np.zeros((len(piece_colors), len(pixels)), dtype=int)
+
+    for i in range(len(piece_colors)):
+        distances[i] = cmp_pixel(pixels, piece_colors[i])
+
+    min_distances = np.min(distances, axis=1)  # shape (len(piece_colors),)
+    if np.min(min_distances) < 30:
+        return np.argmin(min_distances)
     return -1
 
 
-def get_field() -> (np.array, int):
+def get_field(interactive_setup: Optional[InteractiveSetup] = None) -> (np.array, int):
     """
     takes a screenshot and computes playing grid
     :return: field grid, next piece id
     """
-    img = np.array(screen_capture.grab(monitor))
-    pixels = simplified(CONFIG['display consts'].get_field_from_screen(img))
+    img = np.array(screen_capture.grab(CONFIG['display consts'].get_screen_bounds()))
+    field_img = CONFIG['display consts'].get_field_from_screen(img)
+    pixels = simplified(field_img)
+    next_img = CONFIG['display consts'].get_next(img)
+    next_piece = get_figure_by_color(next_img)
 
-    next_piece = get_figure_by_color(CONFIG['display consts'].get_next(img))
+    if interactive_setup is not None:
+        interactive_setup.render_frame(field_img, pixels, next_img, next_piece)
+
     # all empty initially
     field = np.zeros((20 + CONFIG['extra rows'], 10))
     # find middles of grid cells
     cell_size = pixels.shape[1] // 10
     vertical_centers = np.array(np.linspace(cell_size // 2, pixels.shape[0] + cell_size // 2, 21 + CONFIG['extra rows'])[:-1], int)
+    if vertical_centers[-1] > pixels.shape[0]:
+        print("Width to height ratio is not close to 1:2, so the cell size is not correct")
+        return field, next_piece
     horizontal_centers = np.array(np.linspace(cell_size // 2, pixels.shape[1] + cell_size // 2, 11)[:-1], int)
+
+    offsets_to_check = []
+    steps = [-cell_size//3, 0, cell_size//3]
+    nearby = np.zeros((len(steps)**2))
+    for v_offset in steps:
+        for h_offset in steps:
+            offsets_to_check.append((v_offset, h_offset))
     # go through all cell centers
     for i, v in enumerate(vertical_centers):
         for j, h in enumerate(horizontal_centers):
-            if pixels[v][h] == 1:
-                # check a nearby pixels to ensure its not a snowflake or a star
-                if pixels[v+5][h+5] == 1 or pixels[v-5][h-5] == 1:
-                    field[i][j] = 1
+            for k, (v_offset, h_offset) in enumerate(offsets_to_check):
+                nearby[k] = pixels[v + v_offset][h + h_offset]
+            if np.mean(nearby) > 0.75:
+                field[i][j] = 1
+                if CONFIG['print piece color'] and i < 3:
+                    piece_bgr = field_img[v][h][:3].astype(dtype=int)
+                    print(f'RGB color of the new piece: '
+                          f'({piece_bgr[2]}, {piece_bgr[1]}, {piece_bgr[0]})')
     return field, next_piece
