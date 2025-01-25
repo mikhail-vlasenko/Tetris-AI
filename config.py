@@ -12,7 +12,7 @@ def name_piece(piece: int) -> str:
 
 
 # in RGB
-original_colors = np.zeros((7, 3), np.int)
+original_colors = np.zeros((7, 3), int)
 original_colors[0] = (180, 228, 230)
 original_colors[1] = (247, 228, 182)
 original_colors[2] = (140, 99, 177)
@@ -22,26 +22,24 @@ original_colors[5] = (235, 161, 180)
 original_colors[6] = (177, 240, 171)
 
 # tetr.io colors in RGB
-tetrio_colors = np.zeros((7, 3), np.int)
-tetrio_colors[0] = (36, 214, 150)
-tetrio_colors[1] = (210, 171, 42)
-tetrio_colors[2] = (212, 67, 195)
-tetrio_colors[3] = (70, 56, 200)
-tetrio_colors[4] = (217, 96, 48)
-tetrio_colors[5] = (222, 44, 63)
-tetrio_colors[6] = (131, 210, 42)
+tetrio_colors = np.zeros((7, 3), int)
+tetrio_colors[0] = (50, 179, 131)
+tetrio_colors[1] = (179, 153, 49)
+tetrio_colors[2] = (165, 63, 155)
+tetrio_colors[3] = (80, 63, 166)
+tetrio_colors[4] = (179, 99, 50)
+tetrio_colors[5] = (181, 53, 60)
+tetrio_colors[6] = (133, 181, 52)
 
 # set important pixels for screen recognition
-misha = DisplayConsts(370, 970, 155, 455, 340, 540, 485, 560)
-alex = DisplayConsts(339, 895, 142, 422, 315, 505, 450, 475)
-alex_notebook = DisplayConsts(225, 888, 115, 441, 315, 505, 450, 475)
-maxx = DisplayConsts(370, 970, 155, 455, 340, 540, 485, 560)
+tetrio_default = DisplayConsts(top=465, bottom=1780, left=1590, right=2250,
+                               next_top=600, next_bottom=635, next_left=2405, next_right=2535, num_extra_rows=2)
 
-tetrio_default = DisplayConsts(279, 1203, 1046, 1512, 370, 420, 1640, 1710, 180)
 
 # -------------------------------- ACTION REQUIRED --------------------------------
-# add yours and change 'display consts' in CONFIG
-# to easily find these pixel positions, take a screenshot and paste it into paint or something
+# Add yours and change 'display consts' in CONFIG
+# Set 'debug status' to 3 to inspect what the bot sees and adjust the values (opens 2 new windows)
+# Alternatively, take a screenshot of the game and paste it into something like paint,
 # then hover your mouse to the location and read the coordinates
 
 # my_consts = DisplayConsts()
@@ -49,7 +47,11 @@ tetrio_default = DisplayConsts(279, 1203, 1046, 1512, 370, 420, 1640, 1710, 180)
 
 CONFIG = {
     # ---------- per run ----------
-    'debug status': 1,  # greater is more information, 0 is none
+    'debug status': 1,  # greater is more information, 0 is none. 3 is for interactive setup mode
+    # if true, bot prints the color of the piece when it is recognized.
+    # it helps with setting up 'piece colors', but can be misleading because the tone of the current piece
+    # may be different from the color of the piece in the next frame
+    'print piece color': False,
     'key press delay': 0.02,  # increase if facing misclicks, decrease to go faster
     'tetrio garbage': True,
     'starting choices for 2nd': 8,
@@ -62,8 +64,7 @@ CONFIG = {
 
     # ---------- per user ----------
     'display consts': tetrio_default,
-    'screen width': 2560,
-    'screen height': 1440,
+    'helper window size': '768x1536',
 
     # ---------- per game ----------
     'game': 'tetr.io',
@@ -85,3 +86,6 @@ def configure_fast():
 
 # call to use the pre-set
 configure_fast()
+
+assert not (CONFIG['print piece color'] and CONFIG['confirm placement']), \
+    'Disable "confirm placement" to avoid confusion with the color printout'

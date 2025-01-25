@@ -1,7 +1,10 @@
 import time
 
+import winsound
+
 from config import CONFIG, name_piece
 from scan_field import get_field
+from src.display_interacive_setup import InteractiveSetup, ConstantsGUI
 from src.figures import type_figure_ext
 from src.AI_main import AI
 import numpy as np
@@ -12,6 +15,10 @@ def main():
     expected_rwd = 0
     ai = AI()
     position = None
+    interactive_setup = None
+    if CONFIG['debug status'] >= 3:
+        ConstantsGUI(CONFIG['display consts'])
+        interactive_setup = InteractiveSetup()
 
     # call jit-compiling functions to compile them
     ai.calc_best(np.zeros((20, 10), dtype=int), 0)
@@ -21,7 +28,7 @@ def main():
     # infinite playing cycle
     while True:
         # get playing grid and the next piece
-        field, next_piece = get_field()
+        field, next_piece = get_field(interactive_setup)
         # parse current tetris piece
         piece_idx = type_figure_ext(field[:5])
         if piece_idx is None:
@@ -29,6 +36,12 @@ def main():
                 print('\nTetris piece is not found.\n'
                       'Are you sure you have set your DisplayConsts in config.py?\n')
                 CONFIG['gave warning'] = True
+            continue
+        if CONFIG['print piece color']:
+            print(f'Piece id for which the color was just printed: {piece_idx}')
+
+        if CONFIG['debug status'] >= 3:
+            # in the interactive setup, do not play the game
             continue
 
         # hold if nothing is held
@@ -54,6 +67,7 @@ def main():
         actual_score = ai.get_score(field[3:])[0]
         if CONFIG['debug status'] >= 1:
             if expected_rwd != actual_score:
+                winsound.Beep(2500, 500)
                 print('\nit was a misclick\n')
             if CONFIG['debug status'] >= 2:
                 print(field)

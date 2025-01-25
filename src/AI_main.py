@@ -21,7 +21,6 @@ class AI:
         self.speed = 1
         self.clearing = CONFIG['play for survival']
         self.held_piece = -1
-        self.focus_blank = False
         self.scared = False
         self.choices_for_2nd = CONFIG['starting choices for 2nd']
 
@@ -54,9 +53,9 @@ class AI:
     @jit(nopython=True)
     def find_roofs(field: np.array) -> (int, int, np.array, int):
         """
-        finds blank squares under landed pieces
+        Finds blank squares under landed pieces and related info
         :param field:
-        :return: blank_cnt, height, [height of lines], blank_cumulative_depth
+        :return: blank_cnt, max height, [height of columns], blank_cumulative_depth
         """
         tops = np.zeros((10, 2))
         blank_cnt = 0
@@ -76,70 +75,45 @@ class AI:
     @jit(nopython=True)
     def almost_full_line(field):
         score = 0
+        line_width = len(field[0])
         for i in range(len(field)):
             ssum = np.sum(field[i])
-            if ssum == 9:
+            if ssum == line_width - 1:
                 score += 2
-            if ssum == 8:
+            if ssum == line_width - 2:
                 score += 0.5
         return score
 
     @staticmethod
     @jit(nopython=True)
-    def find_pit(field, tops):
-        gap_idx = []
-        for i in range(len(field)):
-            if np.sum(field[i]) == 9:
-                gap_idx.append(np.where(field[i] == 0))
-            else:
-                gap_idx.append(-1)
-        curr_pit = -1
-        pit_height = 0
-        max_pit_h = 0
-        for i in range(len(field)-1, -1, -1):
-            if gap_idx[i] != -1 and curr_pit != gap_idx and tops[gap_idx[i]] < i:
-                if max_pit_h < pit_height:
-                    max_pit_h = pit_height
-                curr_pit = gap_idx[i]
-                pit_height += 1
-            elif gap_idx[i] == curr_pit and curr_pit != -1:
-                pit_height += 1
-        if max_pit_h < pit_height:
-            max_pit_h = pit_height
-        return max_pit_h
-
-    @staticmethod
-    @jit(nopython=True)
     def find_hole(tops):
+        """
+        A hole is a column such that neighbouring columns are higher by more than 2.
+        Such column can only be filled by a long piece without creating a blank.
+        """
         cnt_hole = 0
-        tops = np.insert(tops, 0, 20)
+        previous_height = 20
         tops[-1] = 20  # not using last column, so lets say its high
         for i in range(1, len(tops) - 1):
-            if tops[i - 1] - 2 > tops[i] and tops[i] < tops[i + 1] - 2:
+            if previous_height - 2 > tops[i] and tops[i] < tops[i + 1] - 2:
                 cnt_hole += 1
-            if tops[i - 1] - 4 > tops[i] and tops[i] < tops[i + 1] - 4:
+            if previous_height - 4 > tops[i] and tops[i] < tops[i + 1] - 4:
                 cnt_hole += min(tops[i - 1] - 4 - tops[i], tops[i + 1] - 4 - tops[i])
+            previous_height = tops[i]
         return cnt_hole
 
     def update_state(self, field):
-        roofs = self.find_roofs(field)
+        blank_cnt, max_height, _, _ = self.find_roofs(field)
         if self.clearing and CONFIG['debug status']:
             print('clearing')
-        if roofs[1] >= 13 or self.speed == 3:
+        if max_height >= 13 or self.speed == 3:
             self.scared = True
             if CONFIG['debug status'] >= 1:
                 print('scared')
         else:
             self.scared = False
-        if roofs[0] > 0:
-            self.focus_blank = True
-            if CONFIG['debug status'] >= 1:
-                print('focusing blank')
-        else:
-            self.focus_blank = False
-        return roofs
 
-    def get_score(self, field: np.array, verbose=(CONFIG['debug status'] >= 3)) -> (float, bool):
+    def get_score(self, field: np.array, verbose=(CONFIG['debug status'] >= 2)) -> (float, bool):
         """
         tells how good a position is
         :param field:
@@ -149,46 +123,43 @@ class AI:
         expect_tetris = False
         score = 0
         # compute useful stuff about the position
-        clear = self.clear_line(field)
-        cleared = clear[0]
-        roofs = self.find_roofs(cleared)
-        score += self.almost_full_line(cleared)
+        cleared_field, count_cleared = self.clear_line(field)
+        blank_cnt, max_height, column_heights, blank_cumulative_depth = self.find_roofs(cleared_field)
+        score += self.almost_full_line(cleared_field)
         # scoring tetris is very good
-        if clear[1] >= 4:
+        if count_cleared >= 4:
             score += 1000
             expect_tetris = True
 
+        score -= blank_cnt * 5
+        score -= blank_cumulative_depth * 0.25
+
         # clearing the field as much as possible
         if self.scared or self.clearing:
-            score += 10 * clear[1]
-            score -= roofs[0] * 5  # blank spaces
-            score -= roofs[3]  # cumulative depth of blanks
-            score -= roofs[1] + roofs[1] ** 1.3  # height of highest piece
+            score += 10 * count_cleared
+            score -= max_height + max_height ** 1.4  # height of highest piece
             return score, expect_tetris
 
-        score -= roofs[0] * 10  # blank spaces
-        score -= roofs[3] * 2
+        score -= blank_cnt * 10  # blank spaces
+        score -= blank_cumulative_depth * 2
 
         # height doesn't matter when its low
-        if roofs[1] > 7:
-            score -= roofs[1] ** 1.4
-        score -= self.find_hole(roofs[2]) * 10
-        if self.focus_blank:
-            score -= roofs[3] * 3
-            score += 5 * clear[1]
+        if max_height > 7:
+            score -= max_height ** 1.4
+        score -= self.find_hole(column_heights) * 10
+        if blank_cnt > 0:
+            score += 5 * count_cleared
             return score, expect_tetris
 
-        score -= 3 * clear[1]
-        if roofs[2][9] != 0:
+        score -= 3 * count_cleared
+        if column_heights[9] != 0:
             score -= 10  # the most right column should be empty
-            score -= roofs[2][9]
-        pit_height = self.find_pit(cleared, roofs[2])
+            score -= column_heights[9]
         if verbose:
-            print(cleared)
-            print('lines cleared', clear[1])
-            print(roofs)
-            print('holes', self.find_hole(roofs[2]))
-            print('pit', pit_height)
+            print(cleared_field)
+            print('lines cleared', count_cleared)
+            print(blank_cnt, max_height, column_heights, blank_cumulative_depth)
+            print('holes', self.find_hole(column_heights))
             print('score', score)
         return score, expect_tetris
 
